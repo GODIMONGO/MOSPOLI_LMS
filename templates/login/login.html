@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>СДО - Вход</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="login-container">
+            <form class="login-form" method="post">
+                <img src="https://e.mospolytech.ru/assets/logo-4d9aa449.png" 
+                    alt="Логотип Мосполитеха" 
+                    onclick="this.classList.add('rotate'); setTimeout(() => this.classList.remove('rotate'), 1000);"
+                    draggable="false">
+            <h2>Вход в СДО</h2>
+            {% if error %}
+            <div class="alert">
+                <p class="error-message" style="color: brown;">{{ error }}</p>
+            </div>
+            {% endif %}
+            <div class="form-group">
+                <label for="username" style="background-color: transparent;">Логин:</label>
+                <input type="text" id="username" name="username" value="{{ request.form.username }}" required>
+            </div>
+            <div class="form-group">
+                <label for="password" style="background-color: transparent;">Пароль:</label>
+                <input type="password" id="password" name="password" value="{{ request.form.password }}" required>
+            </div>
+            <div class="form-group">
+                <label for="2fa" style="background-color: transparent;">2FA:</label>
+                <input type="text" id="2fa" name="2fa" value="{{ request.form.text }}" required>
+            </div>
+            <button type="submit" class="btn-submit">Войти</button>
+        </form>
+    </div>
+</body>
+</html>
