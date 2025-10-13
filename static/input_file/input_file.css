@@ -6,15 +6,15 @@
 
 .input-section {
     background-color: white;
-    padding: 40px;
     border-radius: 15px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-    max-width: 500px;
     width: 100%;
+    padding: 20px;
 }
 
 .form-input-file {
     margin-bottom: 25px;
+    text-align: center;
 }
 
 .form-input-file label {
@@ -25,6 +25,7 @@
     margin-bottom: 10px;
 }
 
+/* Само поле выбора файла */
 .form-input-file input[type="file"] {
     width: 100%;
     padding: 12px;
@@ -33,9 +34,15 @@
     background-color: #f8f9ff;
     cursor: pointer;
     transition: all 0.3s ease;
+    /* чтобы текст «Файлы не выбраны» не выглядел как ссылка */
+    color: #333;
 }
 
-.form-input-file {
-    margin-bottom: 25px;
-    text-align: center;
+/* Прячем нативную кнопку «Обзор…» */
+.form-input-file input[type="file"]::file-selector-button {
+    display: none;
+}
+/* Фолбэк для старых WebKit/Safari */
+.form-input-file input[type="file"]::-webkit-file-upload-button {
+    visibility: hidden;
 }

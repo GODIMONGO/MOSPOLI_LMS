@@ -11,6 +11,7 @@ users = {
     'admin': 'admin',
     'student': '123' 
 }
+load_files = ''
 
 @app.route('/')
 def index():
@@ -46,9 +47,23 @@ def logout():
         return redirect(url_for('login'))
     return render_template('logout.html')
 
-@app.route('/input_file')
+@app.route('/input_file', methods=['GET', 'POST'])
 def input_file():
-    return render_template('input_file/input.html')
-
+    if request.method == 'GET':
+        success = f'Пока не отправлено ни одного файла.'
+        return render_template('input_file/input.html', status=success)
+    else:
+        try:
+            files = request.files.getlist('file')
+            upload_folder = 'static/uploads'
+            os.makedirs(upload_folder, exist_ok=True)
+            for file in files:
+                if file.filename == '':
+                    return "No selected file", 400
+                file.save(os.path.join(upload_folder, file.filename))
+            success = f'Успешно загружено файлов: {len(files)}'
+        except Exception as e:
+            success = f'Ошибка при загрузке файлов: {str(e)}'
+        return render_template('input_file/input.html', status=success)
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
