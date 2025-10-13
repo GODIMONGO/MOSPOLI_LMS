@@ -1,0 +1,41 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.input-section {
+    background-color: white;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    max-width: 500px;
+    width: 100%;
+}
+
+.form-input-file {
+    margin-bottom: 25px;
+}
+
+.form-input-file label {
+    display: block;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.form-input-file input[type="file"] {
+    width: 100%;
+    padding: 12px;
+    border: 2px dashed #667eea;
+    border-radius: 8px;
+    background-color: #f8f9ff;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.form-input-file {
+    margin-bottom: 25px;
+    text-align: center;
+}

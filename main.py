@@ -9,7 +9,7 @@ socketio = SocketIO(app, cors_allowed_origins='*')
 # Простые пользователи
 users = {
     'admin': 'admin',
-    'student': '123'
+    'student': '123' 
 }
 
 @app.route('/')
@@ -45,6 +45,10 @@ def logout():
         session.pop('user', None)
         return redirect(url_for('login'))
     return render_template('logout.html')
+
+@app.route('/input_file')
+def input_file():
+    return render_template('input_file/input.html')
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
