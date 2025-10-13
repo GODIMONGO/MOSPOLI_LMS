@@ -31,7 +31,7 @@ def login():
         else:
             error = 'Неверный логин или пароль. Пожалуйста, попробуйте снова.'
     
-    return render_template('login.html', error=error)
+    return render_template('login/login.html', error=error)
 
 @app.route('/dashboard')
 def dashboard():
