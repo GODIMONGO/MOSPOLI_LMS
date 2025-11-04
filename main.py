@@ -3,6 +3,10 @@ import os
 from flask_socketio import SocketIO
 from loguru import logger
 from uuid import uuid4
+import json
+
+with open("config.json", "r") as file:
+    config_data = json.load(file)
 app = Flask(__name__, static_folder='static', template_folder='templates')
 app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app, cors_allowed_origins='*')
