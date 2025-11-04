@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error</title>
+    <script>
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert("Код ошибки скопирован: " + text);
+            }).catch(err => {
+                alert("Не удалось скопировать текст: " + err);
+            });
+        }
+    </script>
+</head>
+<body>
+    <div class="error-container">
+        <h1>Ошибка</h1>
+        <p>Что-то пошло не так. Пожалуйста, попробуйте позже.</p>
+        <p>Код ошибки: 
+            <code onclick="copyToClipboard('{{ id_error }}')" style="cursor: pointer; color: blue;">
+                {{ id_error }}
+            </code> 
+            Передайте его в техническую поддержку.
+        </p>
+    </div>
+</body>
+</html>

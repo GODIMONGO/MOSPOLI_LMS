@@ -1,0 +1,43 @@
+/* Общие стили для header */
+header {
+    background-color: #1779db;
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 24px;
+    color: #343a40;
+    display: inline-block;
+}
+
+/* Стили для логотипа */
+.logo,
+.logo-4d9aa449 {
+    height: 40px;
+    margin-top: 5px;
+    margin-left: 5px;
+}
+
+/* Стили для кнопок в header */
+.logout-form {
+    display: inline-block;
+    float: right;
+    margin-top: 5px;
+    margin-left: 5px;
+}
+
+.back-button {
+    background-color: white;
+    color: #1779db;
+    padding: 8px 16px;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+.back-button:hover {
+    background-color: #f0f0f0;
+}
