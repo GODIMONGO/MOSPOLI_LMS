@@ -1,0 +1,106 @@
+:root {
+    font-size: 10px;
+    --accent: #002fff;
+}
+
+@font-face {
+    font-family: 'Montserrat-SemiBold';
+    src: url('/static/fonts/Montserrat/Montserrat-SemiBold.ttf') format('truetype')
+}
+
+@font-face {
+    font-family: 'Montserrat-Medium';
+    src: url('/static/fonts/Montserrat/Montserrat-Medium.ttf') format('truetype')
+}
+
+@font-face {
+    font-family: 'Montserrat-Regular';
+    src: url('/static/fonts/Montserrat/Montserrat-Regular.ttf') format('truetype')
+}
+
+.all {
+    color: #6D9DEC;
+    font-size: 20px;
+    font-family: 'Montserrat-SemiBold'
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding: 1.5rem 2rem 0 2rem;
+}
+
+.back-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+.container {
+    max-width: 80rem; 
+    margin: 2rem auto 0 auto;
+    padding: 0.5rem; 
+    border-radius: 2rem;
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+    font-size: 2.8rem; 
+    margin: 0;
+    text-align: right;
+    font-family: 'Montserrat-SemiBold', sans-serif;
+}
+.courses-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.courses-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.3rem 0.8rem;
+    gap: 0.8rem;
+    border-bottom: 1px solid #e0e0e0;
+}
+.courses-list li:last-child {
+    border-bottom: none;
+}
+
+.ring-wrap{position:relative;width:50px;height:50px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ring{transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:8;stroke-linecap:round}
+.ring-bg{stroke:#eef3f5}
+.ring-fg{stroke:var(--accent);stroke-dasharray:326.7;stroke-dashoffset:326.7;transition:stroke-dashoffset 700ms cubic-bezier(.2,.9,.2,1)}
+.ring-percent{position:absolute;font-size:14px;font-weight:bold;color:#333}
+
+.course-count-number-task {
+    font-size: 16px;
+    color: #666;
+    display: inline-block;
+    width: 20%;
+    text-align: right;
+    font-family: 'Montserrat-Medium', sans-serif;
+}
+
+.course_name {
+    font-size: 18px;
+    margin-bottom: 0;
+    display: inline-block;
+    width: 70%;
+    text-align: left;
+    color: #6D6D6D;
+    font-family: 'Montserrat-Medium', sans-serif;
+}
+
+.course_count {
+    font-size: 16px;
+    color: #666;
+    display: inline-block;
+    width: 20%;
+    text-align: right;
+}

@@ -20,7 +20,7 @@
         <h2> Добро пожаловать, {{ username }}!</h2>
     </div>
     <div class="flex-container-1">
-        <a href="settings" class="flex-item-settings">
+        <a href="{{ url_for('settings') }}" class="flex-item-settings">
             <img src="{{ url_for('static', filename='images/settings-icon.png') }}" alt="">
             <p>Настройки</p>
         </a>
@@ -28,7 +28,7 @@
             <img src="{{ url_for('static', filename='images/profile-icon.png') }}" alt="">
             <p>Профиль</p>
         </a>
-        <a href="#" class="flex-item-course">
+        <a href="{{ url_for('courses') }}" class="flex-item-course">
             <img src="{{ url_for('static', filename='images/course-ico.svg') }}" alt="">
             <p>Курс</p>
         </a>

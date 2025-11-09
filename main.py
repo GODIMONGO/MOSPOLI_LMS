@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, session, url_for
+from flask import Flask, render_template, request, redirect, session, url_for, jsonify
 import os
 from flask_socketio import SocketIO
 from loguru import logger
@@ -122,9 +122,45 @@ try:
         except Exception as e:
             id_error = error_id_logger(e)
             return render_template('error/error.html', id_error=id_error)
+
+    # Список курсов для передачи в шаблон
+    # count_number_task - 1 ячейка = 1 тема в курсе
+    courses_data = [
+        {"name": "Основы проектирования БД", "count": 6, "stat": 100, "count_number_task": 12},
+        {"name": "Основы программирования", "count": 10, "stat": 80, "count_number_task": 15},
+        {"name": "Основы Цифрового дизайна", "count": 3, "stat": 60, "count_number_task": 8},
+        {"name": "Основы информационно-коммуникационных технологий", "count": 7, "stat": 40, "count_number_task": 10},
+        {"name": "Основы проектирования БД", "count": 6, "stat": 20, "count_number_task": 9},
+        {"name": "Основы программирования", "count": 5, "stat": 0, "count_number_task": 0},
+        {"name": "Основы проектирования БД", "count": 6, "stat": 100, "count_number_task": 0},
+        {"name": "Основы программирования", "count": 11, "stat": 0, "count_number_task": 0}
+    ]
+
+    default_logo = 'static\\courses\\icons\\logo-4d9aa449.png'
+
+    user_profile = {
+        'name':  'Баранова София Алексеевна',
+        'avatar_text': 'БС',
+        'logo': default_logo,
+        # theme: 'dark' or 'light'
+        'theme': 'dark'
+    }
+
+
+    @app.route('/courses')
+    def courses():
+        try:
+            return render_template('courses/courses.html', courses=courses_data, user_profile=user_profile)
+        except Exception as e:
+            id_error = error_id_logger(e)
+            return render_template('error/error.html', id_error=id_error)
+
 except Exception as e:
     id_error = error_id_logger(e)
-    render_template('error/error.html', id_error=id_error)
+    @app.route('/', defaults={'path': ''})
+    @app.route('/<path:path>')
+    def catch_all(path):
+        return render_template('error/error.html', id_error=id_error)
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

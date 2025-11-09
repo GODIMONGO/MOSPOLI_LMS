@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Мои курсы</title>
+	<link rel="stylesheet" href="{{ url_for('static', filename='courses/courses.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="back-button">
+                <img src="{{ url_for('static', filename='courses/icons/arrow.svg') }}" alt="Back" width="6" height="12">
+                <span class="all">Все разделы</span>
+            </div>
+            <h2>Мои курсы</h2>
+        </div>
+        <ul class="courses-list">
+            {% for course in courses %}
+            <li>
+                <span class="square-academic-cap">
+                    <img src="{{ url_for('static', filename='courses/icons/square-academic-cap.svg') }}" alt="Academic Cap Icon" width="32" height="17">
+                </span>
+                <span class="course_name">{{ course.name }}</span>
+                <span class="course-count-number-task">{{ course.count_number_task }}</span>
+                {# ds #}
+                {% set pct = course.stat if course.stat is defined else 0 %}
+                {% if pct is string %}
+                    {% set pct = pct|int %}
+                {% endif %}
+                {% if pct < 0 %}
+                    {% set pct = 0 %}
+                {% elif pct > 100 %}
+                    {% set pct = 100 %}
+                {% endif %}
+
+                {# SVG circle math: circumference for r=18 -> 2*pi*18 ~= 113.097
+                   stroke-dasharray set to 113 and stroke-dashoffset = 113 * (100 - pct)/100
+                #}
+                {% set circ = 326.7 %}
+                {% set dashoffset = ((circ * (100 - pct)) / 100) | round(2) %}
+                <div class="ring-wrap">
+                    <svg class="ring" viewBox="0 0 120 120" width="50" height="50" aria-hidden="true">
+                        <circle cx="60" cy="60" r="30" class="ring-bg"/>
+                        <circle cx="60" cy="60" r="30" class="ring-fg" style="stroke-dasharray: {{ circ }}; stroke-dashoffset: {{ dashoffset }};"/>
+                    </svg>
+                </div>
+
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</body>
+</html>

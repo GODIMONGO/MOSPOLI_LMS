@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Task Manager with Progress Tracker</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>Task Manager <small>with Progress Tracker</small></h1>
+  </header>
+
+  <main class="layout">
+    <!-- LEFT SIDEBAR: form + controls -->
+    <aside class="sidebar">
+      <div class="card form-card">
+        <label>Title
+          <input id="title" placeholder="e.g. Finish report"/>
+        </label>
+
+        <label>Description
+          <input id="description" placeholder="Short description (optional)"/>
+        </label>
+
+        <label>Due date
+          <input id="due" type="date"/>
+        </label>
+
+        <label>Priority
+          <select id="priority">
+            <option>Low</option>
+            <option selected>Medium</option>
+            <option>High</option>
+          </select>
+        </label>
+
+        <label>Progress
+          <input id="progress" type="range" min="0" max="100" value="0"/>
+          <div class="progress-value"><span id="progress-val">0%</span></div>
+        </label>
+
+        <div class="form-actions">
+          <button id="save-btn" class="btn primary">Add Task</button>
+          <button id="clear-btn" class="btn ghost">Clear</button>
+        </div>
+
+        <hr/>
+
+        <input id="search" placeholder="Search tasks..." class="control-input"/>
+
+        <div class="two-col">
+          <select id="sort">
+            <option value="created">Sort: Created</option>
+            <option value="due">Sort: Due Date</option>
+            <option value="priority">Sort: Priority</option>
+            <option value="progress">Sort: Progress</option>
+          </select>
+
+          <select id="filter-priority">
+            <option value="All">All priorities</option>
+            <option>High</option><option>Medium</option><option>Low</option>
+          </select>
+        </div>
+
+        <div class="io-row">
+          <button id="export-btn" class="btn small">Export</button>
+          <input id="import-file" type="file" accept="application/json" style="display:none"/>
+          <button id="import-btn" class="btn small">Import</button>
+          <button id="clear-all" class="btn danger small">Clear All</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- RIGHT MAIN: stats + task list -->
+    <section class="main-area">
+      <div class="card top-stats">
+        <div class="ring-wrap">
+          <svg class="ring" viewBox="0 0 120 120" width="120" height="120" aria-hidden="true">
+            <circle cx="60" cy="60" r="52" class="ring-bg"/>
+            <circle cx="60" cy="60" r="52" class="ring-fg" id="overall-circle"/>
+          </svg>
+          <div class="ring-text"><strong id="overall-percent">0%</strong></div>
+        </div>
+
+        <div class="stats">
+          <div class="stat"><span id="total-count">0</span><small>Tasks</small></div>
+          <div class="stat"><span id="completed-count">0</span><small>Completed</small></div>
+          <div class="stat"><span id="avg-progress">0%</span><small>Avg Progress</small></div>
+        </div>
+      </div>
+
+      <div class="card tasks-card">
+        <ul id="task-list" class="task-list" aria-live="polite">
+          <!-- tasks render here -->
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
