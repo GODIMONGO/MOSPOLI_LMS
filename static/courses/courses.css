@@ -3,6 +3,28 @@
     --accent: #002fff;
 }
 
+.search-form {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin: 0 auto 2rem auto;
+}
+.search-input {
+    padding: 0.5rem 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px 0 0 4px;
+    font-size: 1.6rem;
+    outline: none;
+    font-family: 'Montserrat-Regular';
+    margin: 0;
+}
+.search-btn {
+}
+.search-btn:hover {
+    background: #002fff;
+}
+
 @font-face {
     font-family: 'Montserrat-SemiBold';
     src: url('/static/fonts/Montserrat/Montserrat-SemiBold.ttf') format('truetype')

@@ -154,7 +154,13 @@ try:
         except Exception as e:
             id_error = error_id_logger(e)
             return render_template('error/error.html', id_error=id_error)
-
+    @app.route('/ui-ui-a', methods=['GET', 'POST'])
+    def ui_ui_a():
+        try:
+            return render_template('ui-ui-a/ui-ui-a.html')
+        except Exception as e:
+            id_error = error_id_logger(e)
+            return render_template('error/error.html', id_error=id_error)    
 except Exception as e:
     id_error = error_id_logger(e)
     @app.route('/', defaults={'path': ''})
