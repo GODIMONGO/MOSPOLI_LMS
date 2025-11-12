@@ -11,13 +11,15 @@
     margin: 0 auto 2rem auto;
 }
 .search-input {
-    padding: 0.5rem 1rem;
+    padding: 0.3rem 2rem;
+    font-size: 2rem;
     border: 1px solid #ccc;
-    border-radius: 4px 0 0 4px;
-    font-size: 1.6rem;
+    border-radius: 10px;
     outline: none;
     font-family: 'Montserrat-Regular';
-    margin: 0;
+    width: 100%;
+    max-width: 78rem;
+    box-sizing: border-box;
 }
 .search-btn {
 }
