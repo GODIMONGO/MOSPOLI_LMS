@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Блок файлов</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='BlockFiles/BlockFiles.css') }}">
+</head>
+<body>
+    <div class="BlockFiles-container" id="infoBox">
+        <div class="info-header" onclick="toggleInfo()">
+            Файлы для выполнения
+        </div>
+            <ul class="info-list">
+                <li>
+                    <span class="file-name">Документ 1.pdf</span>
+                    <label class="checkbox-wrapper">
+                        <input type="checkbox" />
+                        <span class="checkbox"></span>
+                    </label>
+                </li>
+                <li>
+                    <span class="file-name">Отчёт 2.docx</span>
+                    <label class="checkbox-wrapper">
+                        <input type="checkbox" />
+                        <span class="checkbox"></span>
+                    </label>
+                </li>
+            </ul>
+    </div>
+</body>
+</html>
