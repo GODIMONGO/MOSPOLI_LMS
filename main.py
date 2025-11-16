@@ -35,12 +35,22 @@ try:
         except Exception as e:
             logger.error(f"Ошибка при получении favicon: {e}")
 
-    @app.route('/')
+    @app.route('/execution-status')
     def index():
         try:
             if 'user' in session:
-                return redirect(url_for('dashboard'))
-            return redirect(url_for('login'))
+                return redirect(url_for('login'))
+            status_dir = 'static/execution-status/status.json'
+            return render_template('execution-status/execution-status.html', status=)
+        except Exception as e:
+            id_error = error_id_logger(e)
+            return render_template('error/error.html', id_error=id_error)
+
+    @app.route('/')
+    def index():
+        try:
+            if 'user' not in session:
+                return redirect(url_for('login'))
         except Exception as e:
             id_error = error_id_logger(e)
             return render_template('error/error.html', id_error=id_error)
