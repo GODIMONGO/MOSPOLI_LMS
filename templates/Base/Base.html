@@ -1,30 +1,33 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>БлокОснРаботы </title>
+    <title>БлокОснРаботы</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='Base/Base.css') }}">
 </head>
 <body>
 <div class="base-container" id="base">
-        <div class="base-header">
-            Лабараторная работа №1
-            <label class="checkbox-wrapper">
-                        <input type="checkbox" />
-                        <span class="checkbox"></span>
-            </label>
-        </div>
-        <div class="base">
 
-        </div>
-        <div class="base-below">
-            <label class="user">
-                user
-            </label>
-            <label class="data">
-                data
-            </label>
-        </div>
-
+    <div class="base-header">
+        Лабораторная работа №1
+        <label class="checkbox-wrapper">
+            <input type="checkbox" />
+            <span class="checkbox"></span>
+        </label>
     </div>
+
+    <div class="base">
+        <div class="comentar-empty">
+        </div>
+        <div class="files-empty">
+        </div>
+    </div>
+
+    <div class="base-below">
+        <label class="user">user</label>
+        <label class="data">data</label>
+    </div>
+
+</div>
 </body>
 </html>
