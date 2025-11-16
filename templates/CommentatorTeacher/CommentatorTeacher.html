@@ -7,8 +7,23 @@
 </head>
 <body>
     <div class="Commentator-container">
-        <label for="message">Коментарий:</label>
-        <textarea id="message" name="message" placeholder="Введите текст здесь..."></textarea>
+        {% if success %}
+            <div id="success-message" style="background:#e6ffe6;color:#2e7d32;padding:1rem 2rem;border-radius:1rem;margin-bottom:1rem;font-size:1.4rem;">
+                {{ success }}
+            </div>
+            <script>
+                setTimeout(function() {
+                    var msg = document.getElementById('success-message');
+                    if (msg) msg.style.display = 'none';
+                }, 5000);
+            </script>
+        {% endif %}
+        <form method="POST">
+            <input type="hidden" name="entity_id" value="{{ entity_id }}">
+            <label for="message">{{ label_text_comment }}</label>
+            <textarea id="message" name="message" placeholder="Введите текст здесь..."></textarea>
+            <button type="submit" class="submit-btn">Отправить</button>
+        </form>
     </div>
 </body>
 </html>

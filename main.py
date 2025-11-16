@@ -40,33 +40,35 @@ try:
             id_error = error_id_logger(e)
             return render_template('error/error.html', id_error=id_error)
 
-    @app.route('/login', methods=['GET', 'POST'])
-    def login():
-        try:
-            error = None
-            if request.method == 'POST':
-                username = request.form['username']
-                password = request.form['password']
-                two_fa = request.form['2fa']
-                if username in users and users[username] == password:
-                    session['user'] = username
-                    return redirect(url_for('dashboard'))
-                else:
-                    error = 'Неверный логин или пароль. Пожалуйста, попробуйте снова.'
-            
-            return render_template('login/login.html', error=error)
-        except Exception as e:
-            id_error = error_id_logger(e)
-            return render_template('error/error.html', id_error=id_error)
-    @app.route('/comments')
-    def comments():
+    @app.route('/comments/<entity_id>', methods=['GET', 'POST'])
+    def comments(entity_id):
         try:
             if 'user' not in session:
                 return redirect(url_for('login'))
-            return render_template('CommentatorTeacher/CommentatorTeacher.html')
+            success = None
+            comment_text = None
+            if request.method == 'POST':
+                comment_text = request.form.get('message')
+                received_entity_id = request.form.get('entity_id')
+                uuid_input = request.form.get('uuid_input')
+                print(comment_text, received_entity_id, uuid_input)
+                if received_entity_id != entity_id:
+                    success = "Несоответствие entity_id между URL и формой."
+                if comment_text and comment_text.strip():
+                    success = 'Успешно!'
+                else:
+                    success = None
+            return render_template(
+                'CommentatorTeacher/CommentatorTeacher.html',
+                label_text_comment="Комментарий преподавателя:",
+                success=success,
+                comment_text=comment_text,
+                entity_id=entity_id
+            )
         except Exception as e:
             id_error = error_id_logger(e)
             return render_template('error/error.html', id_error=id_error)
+
     @app.route('/filesblock')
     def filesblock():
         try:
