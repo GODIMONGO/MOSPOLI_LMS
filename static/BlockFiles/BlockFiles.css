@@ -42,7 +42,6 @@ body {
   align-items: center;
 }
 
-/* Иконка документа — как у тебя */
 .info-list li::before {
   content: "";
   position: absolute;
