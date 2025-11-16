@@ -54,6 +54,7 @@ body {
   margin-left: auto;
 }
 .info-list input[type="checkbox"] {
+  /* visually hide but keep in document order for CSS-only toggling */
   position: absolute;
   opacity: 0;
   width: 1px;
@@ -98,13 +99,22 @@ body {
   pointer-events: none;
 }
 
-input[type="checkbox"]:checked + .checkbox::before {
-  opacity: 1;
+/* Show the SVG when the checkbox (inside the label) is checked */
+.checkbox-wrapper input[type="checkbox"]:checked + .checkbox::before,
+.checkbox-wrapper input[type="checkbox"][checked] + .checkbox::before {
+  opacity: 1 !important;
 }
 
-input[type="checkbox"]:focus + .checkbox {
+/* focus styling removed — keep it simple: ensure no highlight */
+.checkbox-wrapper input[type="checkbox"]:focus + .checkbox {
   box-shadow: none;
 }
+
+.file-status--on { display: none; }
+.file-status--off { display: inline-block; }
+/* The status toggling using pure-CSS depended on input being before .file-info.
+  Our current markup renders file-info before the checkbox; server persists state,
+  so we keep status rendering server-side (no pure-CSS toggle here). */
 
 .info-header {
   font-size: 1rem;
@@ -138,4 +148,18 @@ input[type="checkbox"]:focus + .checkbox {
 .file-modified {
   font-size: 0.8rem;
   color: #808080;
+}
+.file-submit {
+  margin-left: 0.6rem;
+  background: transparent;
+  border: 1px solid #ddd;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  color: #666;
+}
+.file-status {
+  font-size: 0.8rem;
+  color: #6b6b6b;
+  margin-top: 0.15rem;
 }

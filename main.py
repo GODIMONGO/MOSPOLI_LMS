@@ -4,6 +4,7 @@ from flask_socketio import SocketIO
 from werkzeug.utils import secure_filename
 from loguru import logger
 from uuid import uuid4
+import hashlib
 import json
 import os
 
@@ -84,11 +85,14 @@ try:
             }
             files_dir = 'kurse1'
             project_uploads = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads', files_dir)
+            # load saved checkbox states from session (fid or name -> bool)
+            checked_map = session.get('checked_files', {})
             file_entries = []
             for fname, fileinfo in files.items():
                 abs_path = os.path.join(project_uploads, fname)
                 if os.path.isfile(abs_path):
-                    fid = str(uuid4())
+                    # derive a stable fid from the absolute path so it stays consistent across requests
+                    fid = hashlib.sha1(os.path.abspath(abs_path).encode('utf-8')).hexdigest()
                     file_map[fid] = os.path.abspath(abs_path)
                     file_entries.append({
                         'name': fileinfo['name'],
@@ -96,7 +100,8 @@ try:
                         'last_modified': fileinfo['last_modified'],
                         'url': url_for('download_file', fid=fid),
                         'system_path': os.path.abspath(abs_path),
-                        'fid': fid
+                        'fid': fid,
+                        'checked': checked_map.get(fid, False)
                     })
                 else:
                     file_entries.append({
@@ -104,9 +109,37 @@ try:
                         'desc': fileinfo['desc'],
                         'url': None,
                         'system_path': os.path.abspath(abs_path),
-                        'fid': None
+                        'fid': None,
+                        'checked': checked_map.get(fileinfo['name'], False)
                     })
             return render_template('BlockFiles/BlockFiles.html', files=file_entries)
+        except Exception as e:
+            id_error = error_id_logger(e)
+            return render_template('error/error.html', id_error=id_error)
+
+    @app.route('/filesblock/toggle', methods=['POST'])
+    def toggle_check():
+        try:
+            # fid identifies the file row (may be None for missing file)
+            fid = request.form.get('fid')
+            # Checkbox presence: if checked, 'checked' will be in form data
+            checked = 'checked' in request.form
+            print(f"[toggle_check] fid={fid!r}, checked={checked}")
+            # persist state in session so the checkbox stays checked after redirect
+            checked_map = session.get('checked_files', {})
+            key = fid or request.form.get('fid') or ''
+            # use fid when available, otherwise fallback to provided identifier
+            if fid:
+                checked_map[fid] = checked
+            else:
+                # try to store by name (if fid is None)
+                name_key = request.form.get('fid')
+                if name_key:
+                    checked_map[name_key] = checked
+            session['checked_files'] = checked_map
+            session.modified = True
+            # For now, simply redirect back to the filesblock view
+            return redirect(url_for('filesblock'))
         except Exception as e:
             id_error = error_id_logger(e)
             return render_template('error/error.html', id_error=id_error)

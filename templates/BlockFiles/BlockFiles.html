@@ -14,22 +14,24 @@
             {% if files and files|length > 0 %}
                 {% for file in files %}
                 <li>
-                    <div class="file-actions">
-                            {% if file.url %}
-                                <div class="file-info">
-                                    <a class="file-name" href="{{ file.url }}">{{ file.desc }}</a>
-                                    <span class="file-modified">(Последнее изменение: {{ file.last_modified }})</span>
-                                </div>
-                            {% else %}
-                                <div class="file-info">
-                                    <span class="missing">Файл не найден</span>
-                                </div>
-                            {% endif %}
+                    <!-- Form per file: submit to server to report checkbox status (no JS) -->
+                    <form method="POST" action="{{ url_for('toggle_check') }}" class="file-actions">
+                        {% if file.url %}
+                            <div class="file-info">
+                                <a class="file-name" href="{{ file.url }}">{{ file.desc }}</a>
+                                <span class="file-modified">(Последнее изменение: {{ file.last_modified }})</span>
+                            </div>
+                        {% else %}
+                            <div class="file-info">
+                                <span class="missing">Файл не найден</span>
+                            </div>
+                        {% endif %}
+                        <input type="hidden" name="fid" value="{{ file.fid or file.name }}" />
                         <label class="checkbox-wrapper">
-                            <input type="checkbox" name="selected_files" value="{{ file.system_path }}" />
+                            <input type="checkbox" name="checked" {% if file.checked %}checked{% endif %} />
                             <span class="checkbox"></span>
                         </label>
-                    </div>
+                    </form>
                 </li>
                 {% endfor %}
             {% else %}
@@ -37,5 +39,16 @@
             {% endif %}
         </ul>
     </div>
+    <script>
+        // Minimal unobtrusive JS: submit the file form when its checkbox changes
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('.file-actions input[type="checkbox"]').forEach(function(cb) {
+                cb.addEventListener('change', function () {
+                    // submit the closest form (the checkbox is inside the form)
+                    if (this.form) this.form.submit();
+                });
+            });
+        });
+    </script>
 </body>
 </html>
