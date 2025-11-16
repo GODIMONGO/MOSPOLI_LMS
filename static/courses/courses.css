@@ -21,8 +21,6 @@
     max-width: 78rem;
     box-sizing: border-box;
 }
-.search-btn {
-}
 .search-btn:hover {
     background: #002fff;
 }

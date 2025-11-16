@@ -5,6 +5,7 @@
 
 body {
   font-family: 'Montserrat-Regular', sans-serif;
+  font-size: 1.6rem;
   background-color: #f5f5f5;
   margin: 0;
   padding: 0;
@@ -35,48 +36,106 @@ body {
 
 .info-list li {
   position: relative;
-  padding-left: 20px;
   line-height: 1.8;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 0.4rem 0.6rem;
+  padding-left: 0;
 }
 
 .info-list li::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 11px;
-  height: 13px;
-  background-image: url('/static/BlockFiles/icons/file.svg');
-  background-size: contain;
-  background-repeat: no-repeat;
+  display: none;
 }
 .checkbox-wrapper {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   cursor: pointer;
+  margin-left: auto;
 }
 .info-list input[type="checkbox"] {
-  display: none;
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .checkbox {
-  width: 16px;
-  height: 16px;
-  background-image: url('/static/BlockFiles/icons/checkbox-empty.svg');
-  background-size: contain;
-  background-repeat: no-repeat;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #d0d0d0;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  position: relative;
+  transition: none;
+  flex: 0 0 auto;
 }
 
-input[type="checkbox"]:checked + .checkbox {
-  background-image: url('/static/BlockFiles/icons/checkbox-checked.svg');
+.checkbox::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  background-image: url('/static/BlockFiles/icons/Vector-9.svg');
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: contain;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: none;
+  pointer-events: none;
+}
+
+input[type="checkbox"]:checked + .checkbox::before {
+  opacity: 1;
+}
+
+input[type="checkbox"]:focus + .checkbox {
+  box-shadow: none;
 }
 
 .info-header {
   font-size: 1rem;
   color: #808080;
   margin-bottom: -1rem;
+}
+
+.file-actions {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 0.6rem;
+}
+
+.file-name {
+  text-decoration: none;
+  display: block;
+  padding-left: 2.2rem;
+  background-image: url('/static/BlockFiles/icons/file.svg');
+  background-repeat: no-repeat;
+  background-position: left center;
+  background-size: 1.6rem 1.6rem;
+  color: #808080;
+}
+.file-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0; /* prevent overflow */
+}
+.file-modified {
+  font-size: 0.8rem;
+  color: #808080;
 }

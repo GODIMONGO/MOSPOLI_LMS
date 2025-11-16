@@ -1,15 +1,19 @@
-from flask import Flask, render_template, request, redirect, session, url_for, jsonify
+from flask import Flask, render_template, request, redirect, session, url_for, jsonify, send_from_directory, abort
 import os
 from flask_socketio import SocketIO
+from werkzeug.utils import secure_filename
 from loguru import logger
 from uuid import uuid4
 import json
+import os
 
 with open("config.json", "r") as file:
     config_data = json.load(file)
 app = Flask(__name__, static_folder='static', template_folder='templates')
 app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app, cors_allowed_origins='*')
+# In-memory map of file id -> absolute path for downloads
+file_map = {}
 
 # Простые пользователи
 users = {
@@ -74,10 +78,39 @@ try:
         try:
             if 'user' not in session:
                 return redirect(url_for('login'))
-            return render_template('BlockFiles/BlockFiles.html')
+            files = {
+                'test.txt': {'desc': 'Тестовый файл', 'name': 'test.txt', 'last_modified': '2024-01-01 19:00:00'},
+                'example.pdf': {'desc': 'Пример PDF файла', 'name': 'example.pdf', 'last_modified': '2024-01-02 15:30:00'}
+            }
+            files_dir = 'kurse1'
+            project_uploads = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads', files_dir)
+            file_entries = []
+            for fname, fileinfo in files.items():
+                abs_path = os.path.join(project_uploads, fname)
+                if os.path.isfile(abs_path):
+                    fid = str(uuid4())
+                    file_map[fid] = os.path.abspath(abs_path)
+                    file_entries.append({
+                        'name': fileinfo['name'],
+                        'desc': fileinfo['desc'],
+                        'last_modified': fileinfo['last_modified'],
+                        'url': url_for('download_file', fid=fid),
+                        'system_path': os.path.abspath(abs_path),
+                        'fid': fid
+                    })
+                else:
+                    file_entries.append({
+                        'name': fileinfo['name'],
+                        'desc': fileinfo['desc'],
+                        'url': None,
+                        'system_path': os.path.abspath(abs_path),
+                        'fid': None
+                    })
+            return render_template('BlockFiles/BlockFiles.html', files=file_entries)
         except Exception as e:
             id_error = error_id_logger(e)
             return render_template('error/error.html', id_error=id_error)
+
     @app.route('/dashboard')
     def dashboard():
         try:
@@ -180,6 +213,36 @@ try:
         except Exception as e:
             id_error = error_id_logger(e)
             return render_template('error/error.html', id_error=id_error)    
+    @app.route('/login', methods=['GET', 'POST'])
+    def login():
+        try:
+            error = None
+            if request.method == 'POST':
+                username = request.form.get('username')
+                password = request.form.get('password')
+                if username in users and users[username] == password:
+                    session['user'] = username
+                    return redirect(url_for('dashboard'))
+                else:
+                    error = 'Неверное имя пользователя или пароль'
+            return render_template('login/login.html', error=error)
+        except Exception as e:
+            id_error = error_id_logger(e)
+            return render_template('error/error.html', id_error=id_error)
+
+    @app.route('/download/<fid>')
+    def download_file(fid):
+        # Serve a file referenced by the in-memory file_map created in /filesblock.
+        if 'user' not in session:
+            return redirect(url_for('login'))
+        path = file_map.get(fid)
+        if not path:
+            return abort(404)
+        if not os.path.isfile(path):
+            return abort(404)
+        dirpath = os.path.dirname(path)
+        filename = os.path.basename(path)
+        return send_from_directory(dirpath, filename, as_attachment=True)
 except Exception as e:
     id_error = error_id_logger(e)
     @app.route('/', defaults={'path': ''})

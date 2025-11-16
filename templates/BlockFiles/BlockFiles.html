@@ -10,22 +10,32 @@
         <div class="info-header" onclick="toggleInfo()">
             Файлы для выполнения
         </div>
-            <ul class="info-list">
+        <ul class="info-list">
+            {% if files and files|length > 0 %}
+                {% for file in files %}
                 <li>
-                    <span class="file-name">Документ 1.pdf</span>
-                    <label class="checkbox-wrapper">
-                        <input type="checkbox" />
-                        <span class="checkbox"></span>
-                    </label>
+                    <div class="file-actions">
+                            {% if file.url %}
+                                <div class="file-info">
+                                    <a class="file-name" href="{{ file.url }}">{{ file.desc }}</a>
+                                    <span class="file-modified">(Последнее изменение: {{ file.last_modified }})</span>
+                                </div>
+                            {% else %}
+                                <div class="file-info">
+                                    <span class="missing">Файл не найден</span>
+                                </div>
+                            {% endif %}
+                        <label class="checkbox-wrapper">
+                            <input type="checkbox" name="selected_files" value="{{ file.system_path }}" />
+                            <span class="checkbox"></span>
+                        </label>
+                    </div>
                 </li>
-                <li>
-                    <span class="file-name">Отчёт 2.docx</span>
-                    <label class="checkbox-wrapper">
-                        <input type="checkbox" />
-                        <span class="checkbox"></span>
-                    </label>
-                </li>
-            </ul>
+                {% endfor %}
+            {% else %}
+                <li class="empty">Файлы не найдены.</li>
+            {% endif %}
+        </ul>
     </div>
 </body>
 </html>
