@@ -36,12 +36,12 @@ try:
             logger.error(f"Ошибка при получении favicon: {e}")
 
     @app.route('/execution-status')
-    def index():
+    def execution_status():
         try:
             if 'user' in session:
                 return redirect(url_for('login'))
             status_dir = 'static/execution-status/status.json'
-            return render_template('execution-status/execution-status.html', status=)
+            return
         except Exception as e:
             id_error = error_id_logger(e)
             return render_template('error/error.html', id_error=id_error)
@@ -258,7 +258,7 @@ try:
         except Exception as e:
             id_error = error_id_logger(e)
             return render_template('error/error.html', id_error=id_error)
-    @app.route('/ui-ui-a', methods=['GET', 'POST'])
+    @app.route('q', methods=['GET', 'POST'])
     def ui_ui_a():
         try:
             return render_template('ui-ui-a/ui-ui-a.html')
