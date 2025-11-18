@@ -13,10 +13,8 @@ with open("config.json", "r") as file:
 app = Flask(__name__, static_folder='static', template_folder='templates')
 app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app, cors_allowed_origins='*')
-# In-memory map of file id -> absolute path for downloads
 file_map = {}
 
-# Простые пользователи
 users = {
     'admin': 'admin',
     'student': '123' 
@@ -104,13 +102,11 @@ try:
             }
             files_dir = 'kurse1'
             project_uploads = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads', files_dir)
-            # load saved checkbox states from session (fid or name -> bool)
             checked_map = session.get('checked_files', {})
             file_entries = []
             for fname, fileinfo in files.items():
                 abs_path = os.path.join(project_uploads, fname)
                 if os.path.isfile(abs_path):
-                    # derive a stable fid from the absolute path so it stays consistent across requests
                     fid = hashlib.sha1(os.path.abspath(abs_path).encode('utf-8')).hexdigest()
                     file_map[fid] = os.path.abspath(abs_path)
                     file_entries.append({
@@ -139,25 +135,19 @@ try:
     @app.route('/filesblock/toggle', methods=['POST'])
     def toggle_check():
         try:
-            # fid identifies the file row (may be None for missing file)
             fid = request.form.get('fid')
-            # Checkbox presence: if checked, 'checked' will be in form data
             checked = 'checked' in request.form
             print(f"[toggle_check] fid={fid!r}, checked={checked}")
-            # persist state in session so the checkbox stays checked after redirect
             checked_map = session.get('checked_files', {})
             key = fid or request.form.get('fid') or ''
-            # use fid when available, otherwise fallback to provided identifier
             if fid:
                 checked_map[fid] = checked
             else:
-                # try to store by name (if fid is None)
                 name_key = request.form.get('fid')
                 if name_key:
                     checked_map[name_key] = checked
             session['checked_files'] = checked_map
             session.modified = True
-            # For now, simply redirect back to the filesblock view
             return redirect(url_for('filesblock'))
         except Exception as e:
             id_error = error_id_logger(e)
@@ -174,6 +164,68 @@ try:
                                 lesson_lecturer_name='Имя преподавателя',
                                 lesson_time='с 12:00 до 13:30'
                                 )
+        except Exception as e:
+            id_error = error_id_logger(e)
+            return render_template('error/error.html', id_error=id_error)
+
+    @app.route('/gantt')
+    def gantt():
+        try:
+            if 'user' not in session:
+                return redirect(url_for('login'))
+            return render_template('gantt/gantt_dhtmlx.html')
+        except Exception as e:
+            id_error = error_id_logger(e)
+            return render_template('error/error.html', id_error=id_error)
+
+    @app.route('/api/gantt_tasks')
+    def gantt_tasks():
+        try:
+            tasks = [
+                { 'id': 1, 'text': 'Планирование', 'start_date': '2025-11-01', 'duration': 3, 'open': True, 'progress': 0.3, 'color': 'pink' },
+                { 'id': 2, 'text': 'Сбор требований', 'start_date': '2025-11-01', 'duration': 1, 'parent': 1, 'progress': 1, 'color': 'red' },
+                { 'id': 3, 'text': 'Определение объема', 'start_date': '2025-11-02', 'duration': 2, 'parent': 1, 'progress': 0.4, 'color': 'pink' },
+                { 'id': 4, 'text': 'Разработка', 'start_date': '2025-11-05', 'duration': 9, 'open': True, 'progress': 0.2, 'color': 'blue' },
+                { 'id': 5, 'text': 'Бэкенд', 'start_date': '2025-11-05', 'duration': 4, 'parent': 4, 'progress': 0.2, 'color': 'cyan' },
+                { 'id': 6, 'text': 'Фронтенд', 'start_date': '2025-11-09', 'duration': 5, 'parent': 4, 'progress': 0.1, 'color': 'cyan' }
+            ]
+            links = [
+                { 'id': 1, 'source': 2, 'target': 3, 'type': '0' },
+                { 'id': 2, 'source': 3, 'target': 4, 'type': '0' },
+                { 'id': 3, 'source': 5, 'target': 6, 'type': '0' }
+            ]
+            return jsonify({'data': tasks, 'links': links})
+        except Exception as e:
+            id_error = error_id_logger(e)
+            return jsonify({'error': str(e), 'id_error': id_error}), 500
+
+    @app.route('/gantt/static/<path:filename>')
+    def gantt_static(filename):
+        try:
+            safe = os.path.normpath(filename)
+            if safe.startswith(".."):
+                return abort(403)
+            file_path = os.path.join(app.static_folder, 'gantt', safe)
+            if not os.path.isfile(file_path):
+                return abort(404)
+            # Force Content-Type charset so browser decodes correctly
+            if file_path.endswith('.css'):
+                mimetype = 'text/css; charset=utf-8'
+            elif file_path.endswith('.js'):
+                mimetype = 'application/javascript; charset=utf-8'
+            else:
+                # fallback: let Flask detect
+                mimetype = None
+            if mimetype:
+                return send_from_directory(os.path.dirname(file_path), os.path.basename(file_path), mimetype=mimetype)
+            # For fonts, ensure correct mimetype so browsers load glyphs properly
+            if file_path.endswith('.ttf'):
+                return send_from_directory(os.path.dirname(file_path), os.path.basename(file_path), mimetype='font/ttf')
+            if file_path.endswith('.woff'):
+                return send_from_directory(os.path.dirname(file_path), os.path.basename(file_path), mimetype='font/woff')
+            if file_path.endswith('.woff2'):
+                return send_from_directory(os.path.dirname(file_path), os.path.basename(file_path), mimetype='font/woff2')
+            return send_from_directory(os.path.dirname(file_path), os.path.basename(file_path))
         except Exception as e:
             id_error = error_id_logger(e)
             return render_template('error/error.html', id_error=id_error)
@@ -258,7 +310,7 @@ try:
         except Exception as e:
             id_error = error_id_logger(e)
             return render_template('error/error.html', id_error=id_error)
-    @app.route('q', methods=['GET', 'POST'])
+    @app.route('/q', methods=['GET', 'POST'])
     def ui_ui_a():
         try:
             return render_template('ui-ui-a/ui-ui-a.html')
@@ -303,4 +355,60 @@ except Exception as e:
         return render_template('error/error.html', id_error=id_error)
 
 if __name__ == '__main__':
+    # Ensure local DHTMLX static assets don't include BOM or wrong encoding
+    def _strip_bom(path):
+        try:
+            with open(path, 'rb') as f:
+                data = f.read()
+            # if file starts with UTF-8 BOM (EF BB BF), remove it
+            if data.startswith(b'\xef\xbb\xbf'):
+                data = data[3:]
+                with open(path, 'wb') as f:
+                    f.write(data)
+                logger.info(f"Removed BOM from {path}")
+        except Exception as e:
+            logger.error(f"Error stripping BOM from {path}: {e}")
+
+    try:
+        gantt_dir = os.path.join(app.static_folder, 'gantt')
+        if os.path.isdir(gantt_dir):
+            for root, _, files in os.walk(gantt_dir):
+                for fn in files:
+                    if fn.endswith(('.css', '.js')):
+                        _strip_bom(os.path.join(root, fn))
+            # Replace remote Google fonts in dhtmlx CSS with local fonts if available
+            def _replace_google_fonts(css_path):
+                try:
+                    with open(css_path, 'r', encoding='utf-8') as f:
+                        css = f.read()
+                    # Replace any Google fonts Inter URL with local font path under /gantt/static/fonts
+                    import re
+                    available_fonts = []
+                    fonts_dir = os.path.join(gantt_dir, 'fonts')
+                    if os.path.isdir(fonts_dir):
+                        available_fonts = os.listdir(fonts_dir)
+
+                    def repl(m):
+                        filename = os.path.basename(m.group(1))
+                        # If the remote filename exists locally, keep it; otherwise fall back to first available local font
+                        if filename in available_fonts:
+                            chosen = filename
+                        else:
+                            chosen = available_fonts[0] if available_fonts else filename
+                        # Construct local path that gantt_static will serve
+                        local = f"/gantt/static/fonts/{chosen}"
+                        return f"url('{local}')"
+                    css2 = re.sub(r"url\((https://fonts\.gstatic\.com/s/inter/[^)]+)\)", repl, css)
+                    if css2 != css:
+                        with open(css_path, 'w', encoding='utf-8') as f:
+                            f.write(css2)
+                        logger.info(f"Replaced Google fonts in {css_path} -> local fonts")
+                except Exception as e:
+                    logger.error(f"Error replacing google fonts in {css_path}: {e}")
+            gantt_css = os.path.join(gantt_dir, 'dhtmlxgantt.css')
+            if os.path.isfile(gantt_css):
+                _replace_google_fonts(gantt_css)
+    except Exception as e:
+        logger.error(f"Error preparing gantt static files: {e}")
+
     app.run(debug=True, port=5000)

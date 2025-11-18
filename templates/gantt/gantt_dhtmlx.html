@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Диаграмма Ганта - DHTMLX</title>
+  <!-- Local DHTMLX Gantt resources from static/gantt -->
+  <!-- use local route that ensures files are served as UTF-8 -->
+  <link rel="stylesheet" href="{{ url_for('gantt_static', filename='dhtmlxgantt.css') }}">
+  <script src="{{ url_for('gantt_static', filename='scripts/dhtmlxgantt.js') }}"></script>
+  <style>
+    html, body { height: 100%; padding: 0; margin: 0; font-family: Arial, Helvetica, sans-serif; }
+    #gantt_here { width: 100%; height: calc(100vh - 60px); }
+
+    /* Custom classes to color tasks — names are 'gantt_task_<color>'
+       These are applied via task_class template in JS below.
+    */
+    .gantt_task_pink .gantt_task_content { background: #f78da7; }
+    .gantt_task_red .gantt_task_content { background: #ff5c5c; }
+    .gantt_task_blue .gantt_task_content { background: #4aa3f4; }
+    .gantt_task_cyan .gantt_task_content { background: #7fd4ff; }
+
+    /* progress bar color override to stand out on light background */
+    .gantt_task_pink .gantt_task_progress, .gantt_task_red .gantt_task_progress { background: rgba(0,0,0,0.15); }
+    .gantt_task_blue .gantt_task_progress, .gantt_task_cyan .gantt_task_progress { background: rgba(255,255,255,0.35); }
+    
+    header { padding: 12px; background: #f5f5f5; border-bottom: 1px solid #ddd }
+  </style>
+</head>
+<body>
+  <header>
+    <h3 style="margin:0">Пример DHTMLX Gantt</h3>
+    <div style="font-size:0.9rem;color:#666">Задачи и подзадачи с цветами (все данные берутся через /api/gantt_tasks)</div>
+  </header>
+  <div id="gantt_here"></div>
+  <script>
+    // Initialize the gantt
+    gantt.config.xml_date = '%Y-%m-%d';
+    gantt.init('gantt_here');
+
+    // Use task_class template to add a class by task.color
+    gantt.templates.task_class = function(start, end, task) {
+      if (task.color) {
+        return 'gantt_task_' + task.color;
+      }
+      return '';
+    };
+
+    // load sample data from the Flask API endpoint
+    fetch('/api/gantt_tasks')
+      .then(r => r.json())
+      .then(data => {
+        // Data will contain `data` (tasks) and `links`
+        if (data && data.data) {
+          gantt.parse(data);
+        } else {
+          console.error('Unexpected Gantt data format', data);
+        }
+      }).catch(err => {
+        console.error('Error loading gantt tasks:', err);
+      });
+  </script>
+</body>
+</html>
