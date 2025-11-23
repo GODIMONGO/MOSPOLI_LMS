@@ -1,0 +1,36 @@
+/* Скрываем стандартный чекбокс */
+.custom-checkbox input[type="checkbox"] {
+display: none;
+}
+
+/* Стили для видимой галочки */
+.custom-checkbox span {
+display: inline-block;
+width: 20px;
+height: 20px;
+border: 3px solid #654285;
+border-radius: 4px; /* скругление углов */
+position: relative;
+cursor: pointer;
+vertical-align: middle;
+margin-right: 8px;
+transition: background-color 0.2s;
+}
+
+/* Стили галочки при включении */
+.custom-checkbox input[type="checkbox"]:checked + span {
+background-color: transparent;
+border-color: #654285;
+}
+
+.custom-checkbox input[type="checkbox"]:checked + span::after {
+    content: "";
+    position: absolute;
+    left: 6px;
+    top: 1px;
+    width: 6px;
+    height: 12px;
+    border: solid #654285;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}

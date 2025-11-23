@@ -49,15 +49,27 @@
         </aside>
 
         <!-- Page content -->
-        <main class="page-content" id="pageContent">
+        <main class="page-content" id="pageContent">   
             <div class="content-inner">
                 <h1 class='name_of_curse'>{{ name }}</h1>
                 <div class='curse-content'>
                     {% for block in blocks %}
+
                     <div class="curse-block {% if block['collapsed'] %}collapsed{% endif %}">
-                        <div class="block-header">
+                        <div class="block-header block-header-flex">
                             <h2 class="h2-block">{{ block['title'] }}</h2>
+                            <label class="custom-checkbox">
+                                <input type="checkbox">
+                                <span></span>
+                            </label>
                         </div>
+                        <button class="cross" type="button"
+                            aria-controls="{{ block['id'] }}"
+                            aria-expanded="{{ 'false' if block['collapsed'] else 'true' }}"
+                            aria-label="Кнопка разворачивания"
+                            title="{{ 'Развернуть' if block['collapsed'] else 'Свернуть' }}"
+                            style="--mask-url: url('{{ url_for('static', filename=block['cross_icon']) }}')">
+                        </button>
                         <div class="block-items" id="{{ block['id'] }}" aria-hidden="{{ 'true' if block['collapsed'] else 'false' }}">
                             {% for item in block['items'] %}
                             <div class="list-item">
@@ -67,13 +79,6 @@
                             </div>
                             {% endfor %}
                         </div>
-                        <button class="cross" type="button"
-                            aria-controls="{{ block['id'] }}"
-                            aria-expanded="{{ 'false' if block['collapsed'] else 'true' }}"
-                            aria-label="Кнопка разворачивания"
-                            title="{{ 'Развернуть' if block['collapsed'] else 'Свернуть' }}"
-                            style="--mask-url: url('{{ url_for('static', filename=block['cross_icon']) }}')">
-                        </button>
                     </div>
                     {% endfor %}
                 </div>
