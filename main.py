@@ -9,7 +9,7 @@ import json
 import os
 from routes.gantt import gantt_bp
 from routes.my_curse import my_curse_bp
-
+import config
 with open("config.json", "r") as file:
     config_data = json.load(file)
 app = Flask(__name__, static_folder='static', template_folder='templates')

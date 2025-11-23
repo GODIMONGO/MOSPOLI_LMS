@@ -5,7 +5,8 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>{{ name }}</title>
         <link rel="stylesheet" href="{{ url_for('static', filename='my_curse/my_curse.css') }}">
-        <script defer src="{{ url_for('static', filename='my_curse/my_curse.js') }}"></script>
+        <link rel="stylesheet" href="{{ url_for('static', filename='my_curse/my_curse_block.css') }}">
+        <script defer src="{{ url_for('static', filename='my_curse/scripts/script.js') }}"></script>
 </head>
 <body>
     <div class="app-shell" id="appShell">
@@ -16,10 +17,11 @@
             </div>
             <div class="curse">курс</div>
             <div class="course-pill">
-                <img src="{{ url_for('static', filename='my_curse/icons/curse-icon.svg') }}" alt="Курс" class="pill-icon">
-                <span class="pill-text">Осн.БД 25</span>
+                <!-- используем данные с бэка для иконки и текста -->
+                <img src="{{ url_for('static', filename=course_pill['icon']) }}" alt="Курс" class="pill-icon">
+                <span class="pill-text">{{ course_pill['text'] }}</span>
                 <button class="pill-close" title="Скрыть курс">
-                    <img src="{{ url_for('static', filename='my_curse/icons/cross.svg') }}" alt="Скрыть курс" class="close-icon-side">
+                    <img src="{{ url_for('static', filename=course_pill['close_icon']) }}" alt="Скрыть курс" class="close-icon-side">
                 </button>
             </div>
             <nav class="sidebar-nav" role="navigation">
@@ -48,7 +50,34 @@
 
         <!-- Page content -->
         <main class="page-content" id="pageContent">
-            <h1 class='name_of_curse'>{{ name }}</h1>
+            <div class="content-inner">
+                <h1 class='name_of_curse'>{{ name }}</h1>
+                <div class='curse-content'>
+                    {% for block in blocks %}
+                    <div class="curse-block {% if block['collapsed'] %}collapsed{% endif %}">
+                        <div class="block-header">
+                            <h2 class="h2-block">{{ block['title'] }}</h2>
+                        </div>
+                        <div class="block-items" id="{{ block['id'] }}" aria-hidden="{{ 'true' if block['collapsed'] else 'false' }}">
+                            {% for item in block['items'] %}
+                            <div class="list-item">
+                                <!-- inline style задает маску-иконку из бэка -->
+                                <button class="item-icon" aria-hidden="true" title="{{ item['text'] }}" style="--mask-url: url('{{ url_for('static', filename=item['icon']) }}')"></button>
+                                <a href="{{ item['href'] }}" class="item-link">{{ item['text'] }}</a>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <button class="cross" type="button"
+                            aria-controls="{{ block['id'] }}"
+                            aria-expanded="{{ 'false' if block['collapsed'] else 'true' }}"
+                            aria-label="Кнопка разворачивания"
+                            title="{{ 'Развернуть' if block['collapsed'] else 'Свернуть' }}"
+                            style="--mask-url: url('{{ url_for('static', filename=block['cross_icon']) }}')">
+                        </button>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
         </main>
     </div>
 </body>

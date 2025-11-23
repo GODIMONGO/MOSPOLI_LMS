@@ -1,0 +1,163 @@
+@font-face {
+    font-family: 'Montserrat-SemiBold';
+    src: url('/static/fonts/Montserrat/Montserrat-SemiBold.ttf') format('truetype')
+}
+
+@font-face {
+    font-family: 'Montserrat-Medium';
+    src: url('/static/fonts/Montserrat/Montserrat-Medium.ttf') format('truetype')
+}
+
+@font-face {
+    font-family: 'Montserrat-Regular';
+    src: url('/static/fonts/Montserrat/Montserrat-Regular.ttf') format('truetype')
+}
+
+.content-inner {
+    width: 100%;
+    max-width: 1290px; 
+    box-sizing: border-box;
+    margin-left: auto; 
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+.name_of_curse {
+    margin-left: 30px;
+    font-weight: 700;
+    font-size: 32px;
+
+}
+
+.curse-content {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.curse-block{
+    display: flex;
+    flex-direction: column;
+    background-color: #E9FAF0;
+    padding: 16px 20px 36px 20px;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 1290px;
+    align-items: flex-start;
+    text-align: left;
+    position: relative;
+}
+
+/* header */
+.block-header {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 12px;
+}
+
+.h2-block {
+    font-weight: 500;
+    font-size: 20px;
+    font-family: 'Montserrat-Medium', sans-serif;
+    color: #106C3F;
+    margin: 0;
+}
+
+/* items container */
+.block-items {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* rows with icon + link */
+.list-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0; /* vertical spacing between rows */
+}
+
+/* icon button next to the text */
+.item-icon {
+    width: 20px;
+    height: 20px;
+    background-color: #106C3F; /* icon default color */
+    /* используем переменную --mask-url; fallback к дефолтной иконке */
+    -webkit-mask-image: var(--mask-url, url('icons/todo_list.svg'));
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    -webkit-mask-size: contain;
+    mask-image: var(--mask-url, url('icons/todo_list.svg'));
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-size: contain;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    flex: 0 0 20px;
+    border-radius: 3px;
+}
+
+/* link style */
+.item-link {
+    color: #106C3F;
+    text-decoration: none;
+    font-family: 'Montserrat-Regular', sans-serif;
+    font-size: 14px;
+}
+
+/* arrow button placed at the bottom-right of the block */
+.cross {
+    width: 22px;
+    height: 22px;
+    background-color: #106C3F;
+    /* используем переменную --mask-url; fallback к дефолтной стрелке */
+    -webkit-mask-image: var(--mask-url, url('icons/arrow.svg'));
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    -webkit-mask-size: contain;
+    mask-image: var(--mask-url, url('icons/arrow.svg'));
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-size: contain;
+    position: absolute;
+    right: 14px;
+    bottom: 14px;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: transform 0.18s ease;
+}
+
+/* rotated state for arrow when expanded */
+.cross.rotated {
+    transform: rotate(180deg);
+}
+
+/* expanded block state (optional; change visuals as needed) */
+.curse-block.expanded {
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08); /* example visual change */
+}
+
+/* focus states */
+.item-icon:focus, .cross:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(34,144,239,0.18);
+}
+
+/* Скрыть элементы блока, когда родитель свернут */
+.curse-block.collapsed .block-items {
+    display: none;
+}
+
+/* Анимация/вращение стрелки-кнопки */
+.curse-block .cross {
+    transition: transform 0.18s ease;
+}
+.curse-block:not(.collapsed) .cross {
+    transform: rotate(180deg);
+}
+.curse-block.collapsed .cross {
+    transform: rotate(0deg);
+}
