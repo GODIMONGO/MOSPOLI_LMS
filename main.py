@@ -14,11 +14,14 @@ app = Flask(__name__, static_folder='static', template_folder='templates')
 app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app, cors_allowed_origins='*')
 file_map = {}
+GANTT_STORE = {}
 
 users = {
     'admin': 'admin',
     'student': '123' 
 }
+# Colors used by Gantt tasks. Keys are safe identifiers used in task.color.
+# Values are CSS color strings (hex or any CSS color).
 load_files = ''
 
 def error_id_logger(error):
@@ -49,6 +52,8 @@ try:
         try:
             if 'user' not in session:
                 return redirect(url_for('login'))
+            # If logged in, send to the dashboard
+            return redirect(url_for('dashboard'))
         except Exception as e:
             id_error = error_id_logger(e)
             return render_template('error/error.html', id_error=id_error)
@@ -168,20 +173,76 @@ try:
             id_error = error_id_logger(e)
             return render_template('error/error.html', id_error=id_error)
 
-    @app.route('/gantt')
-    def gantt():
+    @app.route('/gantt/<path:id>')
+    def gantt(id):
         try:
+            print(f"Открыта диаграмма Ганта id={id}")
             if 'user' not in session:
                 return redirect(url_for('login'))
-            return render_template('gantt/gantt_dhtmlx.html')
+            # по умолчанию режим только для просмотра для редактирования ставим 1
+            editable = request.args.get('editable', '1').lower() in ('1', 'true', 'yes')
+            # Accept optional gantt id via query param `id` or the route id value
+            gantt_id = request.args.get('id', id)
+            # Pass color map and names for template to build classes and header
+            # Provide richer info for color styles: background, readable text and overlay color
+            def _color_meta(hexcol):
+                # hexcol in #rrggbb form
+                c = hexcol.lstrip('#')
+                r, g, b = int(c[0:2], 16), int(c[2:4], 16), int(c[4:6], 16)
+                # perceived luminance
+                lum = 0.2126*r + 0.7152*g + 0.0722*b
+                # choose text color for contrast
+                text = '#000' if lum > 160 else '#fff'
+                # progress overlay: use white translucent overlay for dark colors, dark overlay for light
+                overlay = 'rgba(255,255,255,0.4)' if lum <= 160 else 'rgba(0,0,0,0.28)'
+                return {'bg': hexcol, 'text': text, 'overlay': overlay}
+
+            GANTT_COLORS = {
+                'pink': _color_meta('#f78da7'),
+                'red': _color_meta('#ff5c5c'),
+                'blue': _color_meta('#4aa3f4'),
+                'cyan': _color_meta('#7fd4ff'),
+            }
+            return render_template(
+                'gantt/gantt_dhtmlx.html',
+                editable=editable,
+                name='DHTMLX Gantt — Демонстрация',
+                subtitle='абобус',
+                    colors=GANTT_COLORS,
+                    gantt_id=gantt_id
+            )
         except Exception as e:
             id_error = error_id_logger(e)
             return render_template('error/error.html', id_error=id_error)
 
+    @app.route('/gantt')
+    def gantt_root():
+        # fallback route for /gantt (no id in path)
+        return gantt('default')
+
     @app.route('/api/gantt_tasks')
-    def gantt_tasks():
+    def gantt_tasks_default():
+        # fallback: request default dataset. honor ?id= query param for compatibility
+        query_id = request.args.get('id', 'default')
+        return gantt_tasks(query_id)
+
+    @app.route('/api/gantt_tasks/<path:id>')
+    def gantt_tasks(id):
         try:
-            tasks = [
+            print(f"Запрошены задачи для диаграммы Ганта id={id}")
+            # Sample data can vary by id; here we return different example sets for demonstration
+            # If we have a memory-backed dataset, use it so changes persist during runtime
+            if id in GANTT_STORE:
+                store = GANTT_STORE[id]
+                return jsonify({'data': store.get('data', []), 'links': store.get('links', [])})
+
+            if id == 'kurse1':
+                tasks = [
+                    { 'id': 1, 'text': 'Курс 1: Планирование', 'start_date': '2025-11-01', 'duration': 3, 'open': True, 'progress': 0.3, 'color': 'pink' },
+                    { 'id': 2, 'text': 'Курс 1: Сбор требований', 'start_date': '2025-11-01', 'duration': 1, 'parent': 1, 'progress': 1, 'color': 'red' },
+                ]
+            else:
+                tasks = [
                 { 'id': 1, 'text': 'Планирование', 'start_date': '2025-11-01', 'duration': 3, 'open': True, 'progress': 0.3, 'color': 'pink' },
                 { 'id': 2, 'text': 'Сбор требований', 'start_date': '2025-11-01', 'duration': 1, 'parent': 1, 'progress': 1, 'color': 'red' },
                 { 'id': 3, 'text': 'Определение объема', 'start_date': '2025-11-02', 'duration': 2, 'parent': 1, 'progress': 0.4, 'color': 'pink' },
@@ -194,10 +255,98 @@ try:
                 { 'id': 2, 'source': 3, 'target': 4, 'type': '0' },
                 { 'id': 3, 'source': 5, 'target': 6, 'type': '0' }
             ]
+            # add a short `label` for display inside bars; backend can override this
+            def _short_label(text, limit=28):
+                if not text:
+                    return ''
+                txt = str(text)
+                return txt if len(txt) <= limit else txt[:limit-3] + '...'
+
+            for t in tasks:
+                t.setdefault('label', _short_label(t.get('text')))
+            # initialize an in-memory store so edits are captured while server runs
+            GANTT_STORE[id] = {'data': tasks.copy(), 'links': links.copy()}
             return jsonify({'data': tasks, 'links': links})
         except Exception as e:
             id_error = error_id_logger(e)
             return jsonify({'error': str(e), 'id_error': id_error}), 500
+
+    @app.route('/api/gantt_tasks/<path:id>', methods=['POST', 'PUT', 'DELETE'])
+    def gantt_tasks_modify(id):
+        try:
+            if 'user' not in session:
+                return jsonify({'error': 'not authenticated'}), 401
+            # Expecting JSON payload with 'action' or 'type' and 'data'
+            payload = request.get_json(force=True, silent=True) or {}
+            action = payload.get('action') or payload.get('type')
+            data = payload.get('data') or payload.get('task') or payload.get('link') or payload
+
+            # Ensure store exists
+            store = GANTT_STORE.setdefault(id, {'data': [], 'links': []})
+
+            def _next_task_id():
+                existing = [int(t['id']) for t in store['data'] if isinstance(t.get('id'), int)]
+                return (max(existing) + 1) if existing else 1
+
+            def _next_link_id():
+                existing = [int(l['id']) for l in store['links'] if isinstance(l.get('id'), int)]
+                return (max(existing) + 1) if existing else 1
+
+            if request.method == 'POST' or action in ('inserted', 'add_task', 'add_link'):
+                # Create a task or link depending on payload
+                if 'source' in data and 'target' in data:
+                    # Link
+                    new_id = _next_link_id()
+                    new_link = { 'id': new_id, 'source': int(data['source']), 'target': int(data['target']), 'type': data.get('type', '0') }
+                    store['links'].append(new_link)
+                    logger.info(f"Добавлена ссылка в GANTT {id}: {new_link}")
+                    return jsonify({'action': 'inserted', 'id': new_id}), 201
+                else:
+                    # Task
+                    new_id = _next_task_id()
+                    new_task = data.copy() if isinstance(data, dict) else {}
+                    new_task['id'] = new_id
+                    store['data'].append(new_task)
+                    logger.info(f"Добавлена задача в GANTT {id}: {new_task}")
+                    return jsonify({'action': 'inserted', 'id': new_id}), 201
+
+            if request.method == 'PUT' or action in ('updated', 'update_task', 'update_link'):
+                # Update an existing task or link
+                if 'source' in data and 'target' in data:
+                    # link update
+                    lid = int(data['id'])
+                    found = next((l for l in store['links'] if int(l.get('id')) == lid), None)
+                    if not found:
+                        return jsonify({'error':'link not found'}), 404
+                    found.update(data)
+                    logger.info(f"Обновлена ссылка в GANTT {id}: {found}")
+                    return jsonify({'action':'updated', 'id': lid})
+                else:
+                    tid = int(data.get('id'))
+                    found = next((t for t in store['data'] if int(t.get('id')) == tid), None)
+                    if not found:
+                        return jsonify({'error':'task not found'}), 404
+                    found.update(data)
+                    logger.info(f"Обновлена задача в GANTT {id}: {found}")
+                    return jsonify({'action':'updated', 'id': tid})
+
+            if request.method == 'DELETE' or action in ('deleted', 'delete_task', 'delete_link'):
+                # Delete task or link
+                if 'id' in data and 'source' in data and 'target' in data:
+                    lid = int(data['id'])
+                    store['links'] = [l for l in store['links'] if int(l.get('id')) != lid]
+                    logger.info(f"Удалена ссылка {lid} из GANTT {id}")
+                    return jsonify({'action':'deleted', 'id': lid})
+                if 'id' in data:
+                    tid = int(data['id'])
+                    store['data'] = [t for t in store['data'] if int(t.get('id')) != tid]
+                    logger.info(f"Удалена задача {tid} из GANTT {id}")
+                    return jsonify({'action':'deleted', 'id': tid})
+
+            return jsonify({'error':'Unsupported operation', 'payload': payload}), 400
+        except Exception as e:
+            id_error = error_id_logger(e)
+            return jsonify({'error':str(e), 'id_error': id_error}), 500
 
     @app.route('/gantt/static/<path:filename>')
     def gantt_static(filename):
@@ -310,7 +459,7 @@ try:
         except Exception as e:
             id_error = error_id_logger(e)
             return render_template('error/error.html', id_error=id_error)
-    @app.route('/q', methods=['GET', 'POST'])
+    @app.route('/ui-ui-a', methods=['GET', 'POST'])
     def ui_ui_a():
         try:
             return render_template('ui-ui-a/ui-ui-a.html')

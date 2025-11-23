@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Диаграмма Ганта - DHTMLX</title>
+  <title>Диаграмма Ганта</title>
   <!-- Local DHTMLX Gantt resources from static/gantt -->
   <!-- use local route that ensures files are served as UTF-8 -->
   <link rel="stylesheet" href="{{ url_for('gantt_static', filename='dhtmlxgantt.css') }}">
@@ -15,30 +15,216 @@
     /* Custom classes to color tasks — names are 'gantt_task_<color>'
        These are applied via task_class template in JS below.
     */
-    .gantt_task_pink .gantt_task_content { background: #f78da7; }
-    .gantt_task_red .gantt_task_content { background: #ff5c5c; }
-    .gantt_task_blue .gantt_task_content { background: #4aa3f4; }
-    .gantt_task_cyan .gantt_task_content { background: #7fd4ff; }
+    /* Colors provided from backend `colors` map */
+    {% for cname, cval in colors.items() %}
+      .gantt_task_{{ cname }} .gantt_task_content { background: {{ cval.bg }}; color: {{ cval.text }}; }
+    {% endfor %}
 
-    /* progress bar color override to stand out on light background */
-    .gantt_task_pink .gantt_task_progress, .gantt_task_red .gantt_task_progress { background: rgba(0,0,0,0.15); }
-    .gantt_task_blue .gantt_task_progress, .gantt_task_cyan .gantt_task_progress { background: rgba(255,255,255,0.35); }
+    /* progress bar overlay - backend provides base colors; keep default library behavior (centered progress text) */
+    {% for cname, cval in colors.items() %}
+      .gantt_task_{{ cname }} .gantt_task_progress { background: {{ cval.overlay }}; color: {{ cval.text }}; font-weight:700; display:flex; align-items:center; justify-content:center; font-size:0.9rem; text-shadow: 0 1px 0 rgba(0,0,0,0.25); padding:0 8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+      /* Make sure the progress text truncates with ellipsis */
+      .gantt_task_{{ cname }} .gantt_task_progress .gantt_task_progress_text { display:block; width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+      .gantt_task_{{ cname }} .gantt_task_content { background: {{ cval.bg }}; color: {{ cval.text }}; }
+      /* Restore floating label (styled with the task color) */
+      .gantt_task_{{ cname }} .gantt_task_label { background: {{ cval.bg }}; color: {{ cval.text }}; box-shadow:0 2px 6px rgba(0,0,0,0.12); }
+    {% endfor %}
+
+  /* Remove custom task-text overlay - use library defaults */
+  .gantt_task_content .gantt_task_text { display: inline-block; }
+
+  /* Round Gantt task boxes and progress bars for better look */
+  .gantt_task_line { border-radius: 8px !important; overflow: hidden; }
+  .gantt_task_line .gantt_task_content { border-radius: 8px !important; }
+  .gantt_task_progress_wrapper { border-radius: 8px !important; overflow: hidden !important; }
+  .gantt_task_progress { border-radius: 8px !important; }
+  /* Ensure progress text sits above overlay properly */
+  /* Put task text above progress overlay so it's readable on the colored bar */
+  .gantt_task_content { position: relative; z-index: 3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .gantt_task_progress { position: relative; z-index: 2; }
+  /* Label above each task bar - inserted by gantt.templates.task_text */
+  .gantt_task_label{ position:absolute; top:-1.3rem; left:6px; right:6px; z-index:20; display:block; font-weight:700; font-size:0.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:#111; background:rgba(255,255,255,0.92); padding:2px 8px; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.08); }
+  .gantt_task_line .gantt_task_label{ text-shadow:0 1px 0 rgba(255,255,255,0.5); }
     
     header { padding: 12px; background: #f5f5f5; border-bottom: 1px solid #ddd }
+  /* Resizer between grid and chart */
+  .gantt_grid_resizer{ position:absolute; width:8px; top:0; bottom:0; z-index:1500; cursor:col-resize; background:transparent; }
+  .gantt_grid_resizer::before{ content:''; position:absolute; left:50%; top:12px; bottom:12px; width:2px; margin-left:-1px; background:rgba(0,0,0,0.06); border-radius:2px; }
+  body.gantt-resizing{ user-select:none; cursor:col-resize; }
   </style>
 </head>
 <body>
   <header>
-    <h3 style="margin:0">Пример DHTMLX Gantt</h3>
-    <div style="font-size:0.9rem;color:#666">Задачи и подзадачи с цветами (все данные берутся через /api/gantt_tasks)</div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <h3 style="margin:0">{{ name }}</h3>
+      <div style="font-size:0.9rem;color:#666">{{ subtitle }}</div>
+      <div style="margin-left:auto; display:flex;align-items:center;gap:12px;">
+        <div id="gantt_status" style="padding:4px 8px;border-radius:8px;background:#eee;color:#333; font-size:0.85rem">Сохранение: —</div>
+        {% if editable %}
+          Режим: редактирование
+        {% else %}
+          Режим: только просмотр
+        {% endif %}
+      </div>
+  </div>
   </header>
   <div id="gantt_here"></div>
+  <!-- Read-only task details modal -->
+  <div id="gantt_modal" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;">
+    <div id="gantt_modal_back" style="position:absolute;inset:0;background:rgba(0,0,0,0.35);"></div>
+    <div style="position:relative;background:#fff;border-radius:8px;max-width:720px;width:90%;padding:16px;box-shadow:0 6px 24px rgba(0,0,0,0.25);z-index:10000;">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <h4 id="gantt_modal_title" style="margin:0">Детали задачи</h4>
+        <button id="gantt_modal_close" style="background:#eee;border:0;padding:6px 10px;border-radius:6px;cursor:pointer">Закрыть</button>
+      </div>
+      <div id="gantt_modal_body" style="margin-top:12px;font-size:0.95rem;line-height:1.5;color:#222">
+      </div>
+    </div>
+  </div>
   <script>
-    // Initialize the gantt
+    // Initialize the gantt - set options first
     gantt.config.xml_date = '%Y-%m-%d';
-    gantt.init('gantt_here');
+    // Editable flag passed from Flask - default false (view-only)
+    var GANTT_EDITABLE = {{ editable | tojson | safe }};
+    // gantt_id passed by server to select dataset (defaults to 'default')
+    var GANTT_ID = {{ gantt_id | tojson | safe }};
 
-    // Use task_class template to add a class by task.color
+    // Localize months/days and built-in labels to Russian
+    gantt.locale = gantt.locale || {};
+    gantt.locale.date = {
+      month_full: ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"],
+      month_short: ["Янв","Фев","Мар","Апр","Май","Июн","Июл","Авг","Сен","Окт","Ноя","Дек"],
+      day_full: ["Воскресенье","Понедельник","Вторник","Среда","Четверг","Пятница","Суббота"],
+      day_short: ["Вс","Пн","Вт","Ср","Чт","Пт","Сб"]
+    };
+
+    // Convert default grid column labels into Russian
+    gantt.config.columns = [
+      { name:"text", label: "Название", tree:true, width: '*'},
+      { name:"start_date", label: "Дата начала", align: "center", width: 120},
+      { name:"duration", label: "Длительность", align: "center", width: 80},
+      { name:"add", label: "", width: 40 }
+    ];
+
+    if (!GANTT_EDITABLE) {
+      // Read-only mode: turn off drag/resize and block edits
+      gantt.config.readonly = true;
+      gantt.config.drag_move = false;
+      gantt.config.drag_resize = false;
+      gantt.config.drag_progress = false;
+      gantt.config.drag_links = false;
+      // Block adding/editing programatically
+      gantt.attachEvent('onTaskDblClick', function(id, e){ return false; });
+      gantt.attachEvent('onBeforeTaskAdd', function(id, task){ return false; });
+      gantt.attachEvent('onBeforeTaskDrag', function(id, mode, e){ return false; });
+      gantt.attachEvent('onBeforeLinkAdd', function(id){ return false; });
+      // Click to show details in read-only mode
+      gantt.attachEvent('onTaskClick', function(id, e) {
+        // don't open modal when clicking expand/collapse icons or other tree controls
+        try {
+          if (e && e.target) {
+            // DHTMLX uses .gantt_tree_icon (with classes gantt_open/gantt_close), ignore those clicks
+            if (e.target.closest && e.target.closest('.gantt_tree_icon')) {
+              return true;
+            }
+            var cls = (e.target.className || '').toString();
+            if (cls.indexOf && (cls.indexOf('gantt_tree_icon') !== -1 || cls.indexOf('gantt_folder') !== -1)) {
+              return true;
+            }
+          }
+        } catch (ee) {
+          // ignore errors in guard
+        }
+        try {
+          const task = gantt.getTask(id);
+          if (!task) return true;
+          const titleEl = document.getElementById('gantt_modal_title');
+          const bodyEl = document.getElementById('gantt_modal_body');
+          titleEl.innerText = task.text || 'Задача';
+          const makeRow = (k, v) => `<div style="margin:6px 0"><b>${k}:</b>&nbsp;<span>${v ?? ''}</span></div>`;
+          const rows = [];
+          rows.push(makeRow('ID', task.id));
+          rows.push(makeRow('Текст', task.text));
+          // Format dates using gantt templates (will use gantt.locale.date for Russian names)
+          var startFormatted = '-';
+          try {
+            var sd = task.start_date;
+            if (sd) {
+              // dhtmlx usually stores it as Date; if it's a string, new Date() will parse it
+              startFormatted = gantt.templates.task_date(sd instanceof Date ? sd : new Date(sd));
+            }
+          } catch (e) { console.error('date format error', e); }
+          rows.push(makeRow('Начало', startFormatted));
+          rows.push(makeRow('Длительность', task.duration ? (task.duration + ' дней') : '-'));
+          // show formatted end date too
+          var endFormatted = '-';
+          try {
+            var ed = task.end_date || gantt.calculateEndDate(task);
+            if (ed) endFormatted = gantt.templates.task_end_date(ed instanceof Date ? ed : new Date(ed));
+          } catch (e) { console.error('date format error', e); }
+          rows.push(makeRow('Конец', endFormatted));
+          rows.push(makeRow('Прогресс', Math.round((task.progress || 0) * 100) + '%'));
+          rows.push(makeRow('Цвет', task.color || '-'));
+          rows.push(makeRow('Родитель', task.parent || '-'));
+          const custom = Object.assign({}, task);
+          ['id','text','start_date','duration','progress','color','parent'].forEach(k => delete custom[k]);
+          bodyEl.innerHTML = rows.join('');
+          document.getElementById('gantt_modal').style.display = 'flex';
+        } catch (e) {
+          console.error('Ошибка показа деталей задачи', e);
+        }
+        
+        return true;
+      });
+    }
+
+    gantt.init('gantt_here');
+  // initialize resizer once gantt has created its DOM
+  try{ enableGanttGridResizer(); }catch(e){}
+
+    // Small helper to enable dragging the left grid width (resizer between grid and chart)
+    function enableGanttGridResizer(){
+      try{
+        var container = document.getElementById('gantt_here');
+        if (!container) return;
+        // try to find grid element inserted by dhtmlx
+        var grid = container.querySelector('.gantt_grid') || container.querySelector('.gantt_grid_area') || container.querySelector('.gantt_tree');
+        if (!grid) return;
+        // create resizer if not exists
+        if (container.querySelector('.gantt_grid_resizer')) return;
+        var resizer = document.createElement('div'); resizer.className = 'gantt_grid_resizer';
+        container.appendChild(resizer);
+
+        function updateResizerPos(){
+          var gRect = grid.getBoundingClientRect();
+          var cRect = container.getBoundingClientRect();
+          resizer.style.left = (gRect.right - cRect.left - 4) + 'px';
+          resizer.style.height = cRect.height + 'px';
+        }
+
+        var dragging = false;
+        var onMouseMove = function(e){
+          if (!dragging) return;
+          var cRect = container.getBoundingClientRect();
+          var newWidth = e.clientX - cRect.left;
+          // clamp
+          newWidth = Math.max(120, Math.min(newWidth, cRect.width - 120));
+          // set grid width in gantt config and refresh
+          try{ gantt.config.grid_width = newWidth; }catch(e){}
+          try{ gantt.setSizes(); }catch(e){}
+          updateResizerPos();
+        };
+
+        resizer.addEventListener('mousedown', function(e){ dragging = true; document.body.classList.add('gantt-resizing'); e.preventDefault(); });
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', function(){ if (dragging){ dragging = false; document.body.classList.remove('gantt-resizing'); } });
+        window.addEventListener('resize', updateResizerPos);
+        // initial position
+        setTimeout(updateResizerPos, 50);
+      }catch(err){ console.warn('resizer init err', err); }
+    }
+
+  // Use task_class template to add a class by task.color
     gantt.templates.task_class = function(start, end, task) {
       if (task.color) {
         return 'gantt_task_' + task.color;
@@ -46,19 +232,134 @@
       return '';
     };
 
+    // Text that goes INSIDE the task bar itself (centered by default)
+    // By default DHTMLX sets this to task.text; we expose it here so you can
+    // change which property is shown (e.g. short name, code, or empty string)
+    // Show only percent inside the colored pill (no task name inside the bar)
+    gantt.templates.task_text = function(start, end, task) {
+      return '';
+    };
+
+    // Always show percentage (including 0%) inside the progress overlay
+    gantt.templates.progress_text = function(start, end, task) {
+      var p = Math.round((task.progress || 0) * 100);
+      return p + '%';
+    };
+
     // load sample data from the Flask API endpoint
-    fetch('/api/gantt_tasks')
+  // Build URL server-side to ensure the correct id is passed even if JS parsing fails
+  const apiUrl = '/api/gantt_tasks/{{ gantt_id }}';
+  fetch(apiUrl)
       .then(r => r.json())
       .then(data => {
         // Data will contain `data` (tasks) and `links`
         if (data && data.data) {
-          gantt.parse(data);
+       gantt.parse(data);
+       // ensure resizer is positioned after parse
+       setTimeout(function(){ try{ enableGanttGridResizer(); }catch(e){} }, 50);
+       // If GANTT_EDITABLE is false, make sure any handlers will not enable editing
+       if (!GANTT_EDITABLE) {
+         // Remove any built-in edit triggers that might exist in DHTMLX
+         // (redundant with config but adds protection)
+         gantt.foreachTask(function(t){ /* no-op */ });
+       }
         } else {
           console.error('Unexpected Gantt data format', data);
         }
       }).catch(err => {
         console.error('Error loading gantt tasks:', err);
       });
+  
+  // If editable, attach save handlers to sync changes to the backend
+    if (GANTT_EDITABLE) {
+      // small helper to send change events to backend
+      // persistent = true keeps the status text/color until changed by a new action
+      var _statusTimer = null;
+      function _setStatus(txt, color, persistent) {
+        var el = document.getElementById('gantt_status');
+        if (!el) return;
+        if (_statusTimer) { clearTimeout(_statusTimer); _statusTimer = null; }
+        el.innerText = txt;
+        el.style.background = color || '#eee';
+        if (!persistent) {
+          _statusTimer = setTimeout(function(){ el.style.background = '#eee'; el.innerText = 'Сохранение: —'; }, 2000);
+        }
+      }
+
+      function sendChange(action, payload, method) {
+        _setStatus('Сохранение...', '#f0f0ff');
+        return fetch('/api/gantt_tasks/' + GANTT_ID, {
+          method: method || 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: action, data: payload })
+        }).then(r => r.json()).then(resp => {
+          _setStatus('Сохранено', '#eaffea', true);
+          return resp;
+        }).catch(e => {
+          _setStatus('Ошибка сохранения', '#ffdede', false);
+          throw e;
+        });
+      }
+
+      // New task created — the server can allocate a new id
+      gantt.attachEvent('onAfterTaskAdd', function(id, item) {
+        const task = gantt.getTask(id);
+  sendChange('add_task', task, 'POST').then(resp => {
+          if (resp && resp.id) {
+            // Replace temporary id in the gantt storage with what server returned
+            gantt.changeTaskId(id, resp.id);
+          }
+        }).catch(e => console.error('Save task failed', e));
+        return true;
+      });
+
+      // Task updated
+  gantt.attachEvent('onAfterTaskUpdate', function(id, item) {
+        const task = gantt.getTask(id);
+    sendChange('update_task', task, 'PUT').catch(e => console.error('Update task failed', e));
+        return true;
+      });
+
+      // Task deleted
+      gantt.attachEvent('onAfterTaskDelete', function(id) {
+    sendChange('delete_task', { id: id }, 'DELETE').catch(e => console.error('Delete task failed', e));
+        return true;
+      });
+
+      // Link events
+      gantt.attachEvent('onAfterLinkAdd', function(id, link) {
+    sendChange('add_link', link, 'POST').then(resp => {
+          if (resp && resp.id) {
+            // DHTMLX expects numerical link ids; update if server returned new ID
+            // changeLinkId is the DHTMLX API to update link id
+            if (typeof gantt.changeLinkId === 'function') {
+              gantt.changeLinkId(id, resp.id);
+            }
+          }
+        }).catch(e => console.error('Save link failed', e));
+        return true;
+      });
+
+      gantt.attachEvent('onAfterLinkUpdate', function(id, link) {
+    sendChange('update_link', link, 'PUT').catch(e => console.error('Update link failed', e));
+        return true;
+      });
+
+      gantt.attachEvent('onAfterLinkDelete', function(id, link) {
+    sendChange('delete_link', { id: id }, 'DELETE').catch(e => console.error('Delete link failed', e));
+        return true;
+      });
+    }
+  </script>
+  <script>
+    // Attach modal close handlers once
+    (function(){
+      var b = document.getElementById('gantt_modal_close');
+      if (b) b.addEventListener('click', function(){ document.getElementById('gantt_modal').style.display='none'; });
+      var back = document.getElementById('gantt_modal_back');
+      if (back) back.addEventListener('click', function(){ document.getElementById('gantt_modal').style.display='none'; });
+      document.addEventListener('keydown', function(ev){ if (ev.key === 'Escape') { document.getElementById('gantt_modal').style.display='none'; } });
+    })();
   </script>
 </body>
 </html>
