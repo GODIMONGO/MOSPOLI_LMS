@@ -1,0 +1,133 @@
+@font-face {
+    font-family: 'Montserrat-SemiBold';
+    src: url('/static/fonts/Montserrat/Montserrat-SemiBold.ttf') format('truetype')
+}
+
+@font-face {
+    font-family: 'Montserrat-Medium';
+    src: url('/static/fonts/Montserrat/Montserrat-Medium.ttf') format('truetype')
+}
+
+@font-face {
+    font-family: 'Montserrat-Regular';
+    src: url('/static/fonts/Montserrat/Montserrat-Regular.ttf') format('truetype')
+}
+
+.curse {
+    font-family: 'Montserrat-Medium', sans-serif;
+    margin-left: 10px;
+    color: #6D6D6D;
+}
+
+.name_of_curse {
+    font-size: 32px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    font-family: 'Montserrat-SemiBold', sans-serif;
+    margin-left: 10%;
+}
+
+
+.app-shell{
+  --sidebar-width: 240px;
+  display:flex;
+  align-items:stretch;
+  min-height:100vh;
+  gap:0;
+}
+
+.app-sidebar{
+    width:var(--sidebar-width);
+    flex:0 0 var(--sidebar-width);
+    background:#fff;
+    border-radius:12px;
+    padding:12px;
+    box-shadow:0 6px 20px rgba(16,24,40,0.08);
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    box-sizing:border-box;
+    transition:width .18s ease;
+}
+
+.app-shell.collapsed{ --sidebar-width: 64px; }
+
+.sidebar-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:4px 6px;
+}
+
+.sidebar-title{
+    font-family: 'Montserrat-SemiBold';
+}
+
+.course-pill{
+    background:#F5F5F5;
+    border-radius:10px;
+    padding:8px 10px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    font-weight:600;
+    font-family: 'Montserrat-SemiBold';
+}
+
+
+.sidebar-nav{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.nav-item{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 20px 50px;
+    border-radius: 20px;
+    color: #4b5563;
+    text-decoration: none;
+    font-family: 'Montserrat-Medium';
+}
+
+.nav-item .nav-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* fix for img icons: vertically center and set exact size */
+.nav-item .nav-icon img {
+  display: block;
+  margin: 0 auto;
+  object-fit: contain;
+}
+.nav-item.active{
+background:#F9F9FF;
+color:#6D9DEC;
+font-weight:700;
+box-shadow: none;
+}
+
+
+.app-shell.collapsed .nav-text,
+.app-shell.collapsed .sidebar-title,
+.app-shell.collapsed .course-pill .pill-text{
+    padding: 2px;
+}
+.app-shell.collapsed .course-pill{justify-content:center;padding:2px}
+
+
+.page-content{flex:1 1 auto;padding:24px;box-sizing:border-box}
+
+.pill-close {
+    background: #EEEEEE;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    margin-left: 10px;
+    border-radius: 5px;
+}
+
+.close-icon-sidebar {
+    width: 12px;
+    height: 12px;
+    margin: 0 auto;
+}

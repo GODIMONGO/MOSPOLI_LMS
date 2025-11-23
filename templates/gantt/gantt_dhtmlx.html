@@ -6,8 +6,8 @@
   <title>Диаграмма Ганта</title>
   <!-- Local DHTMLX Gantt resources from static/gantt -->
   <!-- use local route that ensures files are served as UTF-8 -->
-  <link rel="stylesheet" href="{{ url_for('gantt_static', filename='dhtmlxgantt.css') }}">
-  <script src="{{ url_for('gantt_static', filename='scripts/dhtmlxgantt.js') }}"></script>
+  <link rel="stylesheet" href="{{ url_for('gantt.gantt_static', filename='dhtmlxgantt.css') }}">
+  <script src="{{ url_for('gantt.gantt_static', filename='scripts/dhtmlxgantt.js') }}"></script>
   <style>
     html, body { height: 100%; padding: 0; margin: 0; font-family: Arial, Helvetica, sans-serif; }
     #gantt_here { width: 100%; height: calc(100vh - 60px); }

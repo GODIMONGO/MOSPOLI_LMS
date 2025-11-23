@@ -39,8 +39,8 @@ def gantt(id):
         return render_template(
             'gantt/gantt_dhtmlx.html',
             editable=editable,
-            name='DHTMLX Gantt — Демонстрация',
-            subtitle='абобус',
+            name='демо',
+            subtitle='тест',
             colors=GANTT_COLORS,
             gantt_id=gantt_id
         )
@@ -51,7 +51,7 @@ def gantt(id):
 
 @gantt_bp.route('/gantt')
 def gantt_root():
-    return redirect(url_for('gantt', id='default'))
+    return redirect(url_for('gantt.gantt', id='default'))
 
 
 @gantt_bp.route('/api/gantt_tasks')
@@ -202,4 +202,5 @@ def gantt_static(filename):
         return send_from_directory(os.path.dirname(file_path), os.path.basename(file_path))
     except Exception as e:
         id_error = _error_id_logger(e)
+        # Fix endpoint name in url_for: use 'gantt.gantt_static' instead of 'gantt_static'
         return render_template('error/error.html', id_error=id_error)

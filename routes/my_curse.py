@@ -18,7 +18,7 @@ def my_curse(id):
         
         return render_template(
             'my_curse/my_curse.html',
-            name='Мой Курс — Демонстрация',
+            name='Основы проектирования БД',
         )
     
     except Exception as e:

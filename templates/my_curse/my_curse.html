@@ -1,1 +1,55 @@
-пенис
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>{{ name }}</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='my_curse/my_curse.css') }}">
+        <script defer src="{{ url_for('static', filename='my_curse/my_curse.js') }}"></script>
+</head>
+<body>
+    <div class="app-shell" id="appShell">
+        <!-- Sidebar (in-flow so it pushes content) -->
+        <aside class="app-sidebar" id="appSidebar" aria-label="Навигация">
+            <div class="sidebar-top">
+                <div class="sidebar-title">Мои курсы</div>
+            </div>
+            <div class="curse">курс</div>
+            <div class="course-pill">
+                <img src="{{ url_for('static', filename='my_curse/icons/curse-icon.svg') }}" alt="Курс" class="pill-icon">
+                <span class="pill-text">Осн.БД 25</span>
+                <button class="pill-close" title="Скрыть курс">
+                    <img src="{{ url_for('static', filename='my_curse/icons/cross.svg') }}" alt="Скрыть курс" class="close-icon-side">
+                </button>
+            </div>
+            <nav class="sidebar-nav" role="navigation">
+                <a href="/my_curse" class="nav-item active">
+                    <img src="{{ url_for('static', filename='my_curse/icons/course-ico.svg') }}" alt="Курс" class="nav-icon">
+                    <span class="nav-text">Курс</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <img src="{{ url_for('static', filename='my_curse/icons/participants.svg') }}" alt="Участники" class="nav-icon">
+                    <span class="nav-text">Участники</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <img src="{{ url_for('static', filename='my_curse/icons/assessments.svg') }}" alt="Оценки" class="nav-icon">
+                    <span class="nav-text">Оценки</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <img src="{{ url_for('static', filename='my_curse/icons/competencies.svg') }}" alt="Компетенции" class="nav-icon">
+                    <span class="nav-text">Компетенции</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <img src="{{ url_for('static', filename='my_curse/icons/info.svg') }}" alt="Информация" class="nav-icon">
+                    <span class="nav-text">Избранное</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Page content -->
+        <main class="page-content" id="pageContent">
+            <h1 class='name_of_curse'>{{ name }}</h1>
+        </main>
+    </div>
+</body>
+</html>
