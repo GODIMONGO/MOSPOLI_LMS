@@ -101,6 +101,17 @@ try:
         except Exception as e:
             id_error = error_id_logger(e)
             return render_template('error/error.html', id_error=id_error)
+
+
+    @app.route('/blockvideo')
+    def blockvideo():
+        try:
+            if 'user' not in session:
+                return redirect(url_for('login'))
+            return render_template('BlockVideo/BlockVideo.html')
+        except Exception as e:
+            id_error = error_id_logger(e)
+            return render_template('error/error.html', id_error=id_error)
     @app.route('/filesblock')
     def filesblock():
         try:
