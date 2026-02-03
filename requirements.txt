@@ -7,3 +7,5 @@ XlsxWriter==3.1.9
 python-socketio==5.8.0
 SQLAlchemy==2.0.19
 loguru==0.7.0
+gunicorn
+eventlet

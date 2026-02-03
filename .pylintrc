@@ -1,0 +1,25 @@
+[MAIN]
+# Игнорируем папки
+ignore=tests,migrations,.venv,venv
+
+[MESSAGES CONTROL]
+# ОТКЛЮЧАЕМ ВЕСЬ ШУМ
+disable=
+    C,
+    R,
+    format,
+    W0511,
+    raw-checker-failed,
+    bad-inline-option,
+    file-ignored,
+    W0718,
+    W0621,
+    W0612,
+    W0613,
+    W1514,
+    W0622
+
+
+
+[REPORTS]
+score=no

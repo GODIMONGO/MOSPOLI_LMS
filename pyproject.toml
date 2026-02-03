@@ -1,0 +1,31 @@
+[tool.poe.tasks]
+check = ["format", "clean", "types", "deep-audit"]
+
+# 1. Форматирование
+format = "ruff format ."
+
+# 2. Чистка (без unsafe, так что ошибки придется удалить руками)
+clean = { cmd = "ruff check --fix .", ignore_fail = true }
+
+# 3. Типы
+types = { cmd = "mypy .", ignore_fail = true }
+
+# 4. Pylint (теперь явно указываем конфиг .pylintrc)
+deep-audit = { cmd = "pylint --rcfile=.pylintrc --recursive=y .", ignore_fail = true }
+
+
+# --- RUFF ---
+[tool.ruff]
+line-length = 140
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B"]
+ignore = ["E741"]
+
+# --- MYPY ---
+[tool.mypy]
+ignore_missing_imports = true
+check_untyped_defs = true
+strict_optional = true
+explicit_package_bases = true
