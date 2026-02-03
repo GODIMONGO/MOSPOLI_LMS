@@ -1,13 +1,14 @@
-import xml.etree.ElementTree as ET
 import hashlib
-import os
-import sys
 import json
+import os
+import xml.etree.ElementTree as ET
+
 from config import patch
+
 
 def repaint_svg(file_path, new_color, output_dir=None, castom_autput_path=False):
     if not castom_autput_path or not output_dir:
-        output_dir = os.path.join(patch, 'lib', 'repainted_svgs')
+        output_dir = os.path.join(patch, "lib", "repainted_svgs")
 
     # ensure output directory exists
     os.makedirs(output_dir, exist_ok=True)
