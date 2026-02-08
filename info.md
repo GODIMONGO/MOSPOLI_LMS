@@ -7,8 +7,11 @@
 
 2. Настроить workflow c запуском по тегу:
 - Создать `.github/workflows/codex-auto.yml`.
-- Триггеры: `issues` и `pull_request` (opened/edited/reopened/labeled/synchronize).
-- Условие запуска: у issue/PR должен быть label `codex`.
+- Триггеры: `issues`, `pull_request`, `issue_comment`.
+- Условие запуска:
+  - label `codex` для comment-only режима,
+  - label `codex-auto` для auto-implementation режима,
+  - `@oracle` в комментарии для ручного вызова.
 - Перед запуском Codex headless добавлять egress IP раннера в firewall allowlist.
 - После выполнения Codex удалять egress IP раннера из allowlist.
 
@@ -27,8 +30,12 @@
 - Для PR дополнительно подтягивать base/head refs для корректного review diff.
 
 5. Публиковать результат:
+- Сразу публиковать стартовый комментарий, что Codex начал работу.
 - Брать `final-message` из выхода шага Codex.
 - Автоматически публиковать комментарий в соответствующий issue/PR.
+- В `codex-auto` режиме:
+  - если есть изменения, автоматически создавать PR;
+  - для исходного PR создавать meta-PR на его head-ветку (кроме fork-head случаев).
 
 6. Валидация:
 - Проверить синтаксис workflow и структуру файлов.
