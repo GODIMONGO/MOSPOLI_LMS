@@ -1,4 +1,5 @@
 import os
+from pathlib import PureWindowsPath
 from uuid import uuid4
 
 from flask import (
@@ -14,6 +15,7 @@ from flask import (
     url_for,
 )
 from loguru import logger
+from werkzeug.exceptions import HTTPException
 
 from app_state import GANTT_STORE
 
@@ -259,28 +261,54 @@ def gantt_tasks_modify(id):
 @gantt_bp.route("/gantt/static/<path:filename>")
 def gantt_static(filename):
     try:
-        safe = os.path.normpath(filename)
-        if safe.startswith(".."):
+        static_folder = current_app.static_folder
+        if not static_folder:
+            return abort(404)
+        root_dir = os.path.realpath(os.path.join(static_folder, "gantt"))
+        requested = (filename or "").replace("\\", "/")
+        win_path = PureWindowsPath(filename or "")
+        safe = os.path.normpath(requested)
+
+        if (
+            os.path.isabs(requested)
+            or requested.startswith("//")
+            or win_path.is_absolute()
+            or bool(win_path.drive)
+            or safe == ".."
+            or safe.startswith(f"..{os.sep}")
+            or safe.startswith("../")
+        ):
             return abort(403)
-        file_path = os.path.join(current_app.static_folder, "gantt", safe)
+
+        file_path = os.path.realpath(os.path.join(root_dir, safe))
+        try:
+            if os.path.commonpath([root_dir, file_path]) != root_dir:
+                return abort(403)
+        except ValueError:
+            return abort(403)
+
         if not os.path.isfile(file_path):
             return abort(404)
-        if file_path.endswith(".css"):
+
+        lower_safe = safe.lower()
+        if lower_safe.endswith(".css"):
             mimetype = "text/css; charset=utf-8"
-        elif file_path.endswith(".js"):
+        elif lower_safe.endswith(".js"):
             mimetype = "application/javascript; charset=utf-8"
         else:
             mimetype = None
         if mimetype:
-            return send_from_directory(os.path.dirname(file_path), os.path.basename(file_path), mimetype=mimetype)
-        if file_path.endswith(".ttf"):
-            return send_from_directory(os.path.dirname(file_path), os.path.basename(file_path), mimetype="font/ttf")
-        if file_path.endswith(".woff"):
-            return send_from_directory(os.path.dirname(file_path), os.path.basename(file_path), mimetype="font/woff")
-        if file_path.endswith(".woff2"):
-            return send_from_directory(os.path.dirname(file_path), os.path.basename(file_path), mimetype="font/woff2")
-        return send_from_directory(os.path.dirname(file_path), os.path.basename(file_path))
+            return send_from_directory(root_dir, safe, mimetype=mimetype)
+        if lower_safe.endswith(".ttf"):
+            return send_from_directory(root_dir, safe, mimetype="font/ttf")
+        if lower_safe.endswith(".woff"):
+            return send_from_directory(root_dir, safe, mimetype="font/woff")
+        if lower_safe.endswith(".woff2"):
+            return send_from_directory(root_dir, safe, mimetype="font/woff2")
+        return send_from_directory(root_dir, safe)
     except Exception as e:
+        if isinstance(e, HTTPException):
+            raise
         id_error = _error_id_logger(e)
         # Fix endpoint name in url_for: use 'gantt.gantt_static' instead of 'gantt_static'
         return render_template("error/error.html", id_error=id_error)
