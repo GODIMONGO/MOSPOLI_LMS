@@ -1,12 +1,19 @@
 import hashlib
 import json
 import os
+import re
 import secrets
+from datetime import datetime
 from uuid import uuid4
+from flask_socketio import SocketIO
+from loguru import logger
 
+from routes.gantt import gantt_bp
+from routes.my_curse import my_curse_bp
 from flask import (
     Flask,
     abort,
+    jsonify,
     redirect,
     render_template,
     request,
@@ -14,11 +21,6 @@ from flask import (
     session,
     url_for,
 )
-from flask_socketio import SocketIO
-from loguru import logger
-
-from routes.gantt import gantt_bp
-from routes.my_curse import my_curse_bp
 
 with open("config.json", "r") as file:
     config_data = json.load(file)
@@ -39,12 +41,233 @@ users = {"admin": "admin", "student": "123"}
 # Colors used by Gantt tasks. Keys are safe identifiers used in task.color.
 # Values are CSS color strings (hex or any CSS color).
 load_files = ""
+APP_ROOT = os.path.dirname(os.path.abspath(__file__))
+UPLOADS_ROOT = os.path.join(APP_ROOT, "uploads")
+DEFAULT_COURSE_ID = "kurse1"
+COURSE_ID_RE = re.compile(r"^[a-zA-Z0-9_-]{1,64}$")
+ALLOWED_EXTS = {"jpg", "jpeg", "png", "gif", "pdf", "doc", "docx", "txt"}
+IMAGE_EXTS = {"jpg", "jpeg", "png", "gif"}
+MAX_FILE_SIZE_MB = 500
+MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024
+MAX_ATTACHED_FILES = 20
+HASH_CHUNK_SIZE = 1024 * 1024
 
 
 def error_id_logger(error):
     id_error = str(uuid4())
     logger.error(f"ID: {id_error} Ошибка: {error}")
     return id_error
+
+
+def ensure_upload_dir(upload_dir):
+    os.makedirs(upload_dir, exist_ok=True)
+
+
+def is_allowed_extension(filename):
+    ext = os.path.splitext(filename)[1].lstrip(".").lower()
+    return ext in ALLOWED_EXTS
+
+
+def is_safe_filename(filename):
+    if not filename:
+        return False
+    if "/" in filename or "\\" in filename:
+        return False
+    if ".." in filename:
+        return False
+    if filename != os.path.basename(filename):
+        return False
+    return True
+
+
+def format_size(size_bytes):
+    size = float(size_bytes)
+    units = ["B", "KB", "MB", "GB", "TB"]
+    for unit in units:
+        if size < 1024 or unit == units[-1]:
+            if unit == "B":
+                return f"{int(size)} {unit}"
+            return f"{size:.1f} {unit}"
+        size /= 1024
+    return f"{size_bytes} B"
+
+
+def load_upload_index(upload_dir, upload_index):
+    ensure_upload_dir(upload_dir)
+    if not os.path.isfile(upload_index):
+        return {}
+    try:
+        with open(upload_index, "r", encoding="utf-8") as file:
+            data = json.load(file)
+    except (json.JSONDecodeError, OSError):
+        return {}
+    if isinstance(data, dict):
+        files_data = data.get("files")
+        if isinstance(files_data, dict):
+            return files_data
+        return data
+    return {}
+
+
+def save_upload_index(upload_dir, upload_index, index):
+    ensure_upload_dir(upload_dir)
+    temp_path = f"{upload_index}.tmp"
+    payload = {"files": index}
+    with open(temp_path, "w", encoding="utf-8") as file:
+        json.dump(payload, file, ensure_ascii=True, indent=2)
+    os.replace(temp_path, upload_index)
+
+
+def compute_file_hash(path):
+    hasher = hashlib.sha256()
+    with open(path, "rb") as file:
+        for chunk in iter(lambda: file.read(HASH_CHUNK_SIZE), b""):
+            hasher.update(chunk)
+    return hasher.hexdigest()
+
+
+def build_file_record(upload_dir, filename, existing=None):
+    if not isinstance(existing, dict):
+        existing = None
+    path = os.path.join(upload_dir, filename)
+    size_bytes = os.path.getsize(path)
+    modified_ts = os.path.getmtime(path)
+    ext = os.path.splitext(filename)[1].lstrip(".").lower()
+    is_image = ext in IMAGE_EXTS
+    file_hash = None
+    if existing:
+        if (
+            existing.get("size_bytes") == size_bytes
+            and existing.get("modified_ts") == modified_ts
+            and existing.get("hash")
+        ):
+            file_hash = existing.get("hash")
+    if not file_hash:
+        file_hash = compute_file_hash(path)
+    return {
+        "name": filename,
+        "size_bytes": size_bytes,
+        "modified_ts": modified_ts,
+        "hash": file_hash,
+        "ext": ext,
+        "is_image": is_image,
+    }
+
+
+def build_file_meta(record, course_id):
+    filename = record.get("name", "")
+    size_bytes = record.get("size_bytes", 0)
+    ext = record.get("ext") or os.path.splitext(filename)[1].lstrip(".").lower()
+    is_image = record.get("is_image", ext in IMAGE_EXTS)
+    modified_ts = record.get("modified_ts", 0)
+    modified = datetime.fromtimestamp(modified_ts).strftime("%Y-%m-%d %H:%M") if modified_ts else ""
+    file_url = url_for("input_file_file", filename=filename, course=course_id)
+    file_hash = record.get("hash")
+    hash_short = file_hash[:12] if file_hash else None
+    return {
+        "name": filename,
+        "size_bytes": size_bytes,
+        "size_label": format_size(size_bytes),
+        "ext": ext or "file",
+        "modified": modified,
+        "modified_ts": modified_ts,
+        "is_image": is_image,
+        "preview_url": file_url if is_image else None,
+        "download_url": file_url,
+        "hash": file_hash,
+        "hash_short": hash_short,
+    }
+
+
+def list_uploaded_files(upload_dir, upload_index, course_id):
+    ensure_upload_dir(upload_dir)
+    index = load_upload_index(upload_dir, upload_index)
+    changed = False
+
+    if not index:
+        for filename in os.listdir(upload_dir):
+            if filename.startswith("."):
+                continue
+            path = os.path.join(upload_dir, filename)
+            if not os.path.isfile(path):
+                continue
+            if not is_safe_filename(filename):
+                continue
+            index[filename] = build_file_record(upload_dir, filename)
+            changed = True
+    else:
+        for filename in list(index.keys()):
+            if not is_safe_filename(filename):
+                index.pop(filename, None)
+                changed = True
+                continue
+            path = os.path.join(upload_dir, filename)
+            if not os.path.isfile(path):
+                index.pop(filename, None)
+                changed = True
+                continue
+            record = build_file_record(upload_dir, filename, index.get(filename))
+            if record != index.get(filename):
+                index[filename] = record
+                changed = True
+
+    if changed:
+        save_upload_index(upload_dir, upload_index, index)
+
+    entries = []
+    for filename, record in index.items():
+        if not is_safe_filename(filename):
+            continue
+        record_name = record.get("name")
+        if record_name != filename:
+            record = {**record, "name": filename}
+        entries.append(build_file_meta(record, course_id))
+
+    entries.sort(key=lambda item: item["modified_ts"], reverse=True)
+    for item in entries:
+        item.pop("modified_ts", None)
+    return entries
+
+
+def get_course_id_from_request():
+    course_id = (request.args.get("course") or DEFAULT_COURSE_ID).strip()
+    if not course_id:
+        course_id = DEFAULT_COURSE_ID
+    if not COURSE_ID_RE.fullmatch(course_id):
+        return None
+    return course_id
+
+
+def get_current_username():
+    username = session.get("user")
+    if not username:
+        return None
+    if not is_safe_filename(username) or len(username) > 128:
+        return None
+    return username
+
+
+def require_upload_context():
+    username = get_current_username()
+    if not username:
+        return None, (jsonify({"error": "Требуется авторизация."}), 401)
+
+    course_id = get_course_id_from_request()
+    if not course_id:
+        return None, (jsonify({"error": "Некорректный курс."}), 400)
+
+    upload_dir = os.path.join(UPLOADS_ROOT, course_id, username)
+    upload_index = os.path.join(upload_dir, ".index.json")
+
+    return (
+        {
+            "username": username,
+            "course_id": course_id,
+            "upload_dir": upload_dir,
+            "upload_index": upload_index,
+        },
+        None,
+    )
 
 
 try:
@@ -226,25 +449,186 @@ try:
             id_error = error_id_logger(e)
             return render_template("error/error.html", id_error=id_error)
 
-    @app.route("/input_file", methods=["GET", "POST"])
+    @app.route("/input_file", methods=["GET"])
     def input_file():
         try:
-            if request.method == "GET":
-                success = "Пока не отправлено ни одного файла."
-                return render_template("input_file/input.html", status=success)
-            else:
-                try:
-                    files = request.files.getlist("file")
-                    upload_folder = "static/uploads"
-                    os.makedirs(upload_folder, exist_ok=True)
-                    for file in files:
-                        if file.filename == "":
-                            return "No selected file", 400
-                        file.save(os.path.join(upload_folder, file.filename))
-                    success = f"Успешно загружено файлов: {len(files)}"
-                except Exception as e:
-                    success = f"Ошибка при загрузке файлов: {str(e)}"
-                return render_template("input_file/input.html", status=success)
+            if "user" not in session:
+                return redirect(url_for("login"))
+
+            course_id = get_course_id_from_request()
+            if not course_id:
+                return "", 400
+            return render_template(
+                "input_file/input.html",
+                course_id=course_id,
+                max_file_size_mb=MAX_FILE_SIZE_MB,
+                max_attached_files=MAX_ATTACHED_FILES,
+                allowed_exts=sorted(ALLOWED_EXTS),
+            )
+        except Exception as e:
+            id_error = error_id_logger(e)
+            return render_template("error/error.html", id_error=id_error)
+
+    @app.route("/input_file/list", methods=["GET"])
+    def input_file_list():
+        try:
+            ctx, err = require_upload_context()
+            if err:
+                return err
+
+            files = list_uploaded_files(ctx["upload_dir"], ctx["upload_index"], ctx["course_id"])
+            return jsonify({"files": files})
+        except Exception as e:
+            id_error = error_id_logger(e)
+            return jsonify({"error": f"Ошибка списка файлов: {id_error}"}), 500
+
+    @app.route("/input_file/upload", methods=["POST"])
+    def input_file_upload():
+        try:
+            ctx, err = require_upload_context()
+            if err:
+                return err
+
+            ensure_upload_dir(ctx["upload_dir"])
+            # Ensure the index is synced with the upload dir so limits are accurate.
+            list_uploaded_files(ctx["upload_dir"], ctx["upload_index"], ctx["course_id"])
+            index = load_upload_index(ctx["upload_dir"], ctx["upload_index"])
+            index_changed = False
+            files = request.files.getlist("file")
+            if not files:
+                return jsonify({"added": [], "errors": ["Файлы не выбраны."]}), 400
+            added = []
+            errors = []
+            current_count = len(index)
+            for file in files:
+                filename = file.filename or ""
+                if not filename:
+                    errors.append("Пропущен файл без имени.")
+                    continue
+                if not is_safe_filename(filename):
+                    errors.append(f"Недопустимое имя файла: {filename}")
+                    continue
+                if not is_allowed_extension(filename):
+                    errors.append(f"Недопустимое расширение: {filename}")
+                    continue
+                is_replacement = filename in index
+                if not is_replacement and current_count >= MAX_ATTACHED_FILES:
+                    errors.append(
+                        f"Превышено максимальное количество файлов: {MAX_ATTACHED_FILES}."
+                    )
+                    continue
+                target_path = os.path.join(ctx["upload_dir"], filename)
+                file.save(target_path)
+                size_bytes = os.path.getsize(target_path)
+                if size_bytes > MAX_FILE_SIZE_BYTES:
+                    os.remove(target_path)
+                    errors.append(f"Файл слишком большой: {filename}")
+                    continue
+                record = build_file_record(ctx["upload_dir"], filename, index.get(filename))
+                index[filename] = record
+                index_changed = True
+                if not is_replacement:
+                    current_count += 1
+                added.append(build_file_meta(record, ctx["course_id"]))
+            if index_changed:
+                save_upload_index(ctx["upload_dir"], ctx["upload_index"], index)
+            status_code = 200 if added else 400
+            return jsonify({"added": added, "errors": errors}), status_code
+        except Exception as e:
+            id_error = error_id_logger(e)
+            return jsonify({"added": [], "errors": [f"Ошибка загрузки: {id_error}"]}), 500
+
+    @app.route("/input_file/rename", methods=["POST"])
+    def input_file_rename():
+        try:
+            ctx, err = require_upload_context()
+            if err:
+                return err
+
+            data = request.get_json(silent=True) or {}
+            old_name = (data.get("from") or data.get("old_name") or data.get("old") or "").strip()
+            new_name = (data.get("to") or data.get("new_name") or data.get("new") or "").strip()
+
+            if not is_safe_filename(old_name):
+                return jsonify({"ok": False, "error": "Недопустимое имя файла."}), 400
+            if not new_name:
+                return jsonify({"ok": False, "error": "Новое имя не задано."}), 400
+            if not is_safe_filename(new_name):
+                return jsonify({"ok": False, "error": "Недопустимое новое имя файла."}), 400
+            if not is_allowed_extension(new_name):
+                return jsonify({"ok": False, "error": "Недопустимое расширение."}), 400
+
+            old_path = os.path.join(ctx["upload_dir"], old_name)
+            new_path = os.path.join(ctx["upload_dir"], new_name)
+            if not os.path.isfile(old_path):
+                return jsonify({"ok": False, "error": "Файл не найден."}), 404
+
+            if old_name == new_name:
+                index = load_upload_index(ctx["upload_dir"], ctx["upload_index"])
+                record = build_file_record(ctx["upload_dir"], old_name, index.get(old_name))
+                index[old_name] = record
+                save_upload_index(ctx["upload_dir"], ctx["upload_index"], index)
+                return jsonify({"ok": True, "file": build_file_meta(record, ctx["course_id"])})
+
+            if os.path.exists(new_path):
+                return (
+                    jsonify({"ok": False, "error": "Файл с таким именем уже существует."}),
+                    409,
+                )
+
+            os.replace(old_path, new_path)
+
+            index = load_upload_index(ctx["upload_dir"], ctx["upload_index"])
+            existing = index.pop(old_name, None)
+            record = build_file_record(ctx["upload_dir"], new_name, existing)
+            index[new_name] = record
+            save_upload_index(ctx["upload_dir"], ctx["upload_index"], index)
+
+            return jsonify({"ok": True, "file": build_file_meta(record, ctx["course_id"])})
+        except Exception as e:
+            id_error = error_id_logger(e)
+            return jsonify({"ok": False, "error": f"Ошибка переименования: {id_error}"}), 500
+
+    @app.route("/input_file/delete", methods=["POST"])
+    def input_file_delete():
+        try:
+            ctx, err = require_upload_context()
+            if err:
+                return err
+
+            data = request.get_json(silent=True) or {}
+            filename = data.get("name", "")
+            if not is_safe_filename(filename):
+                return jsonify({"ok": False, "error": "Недопустимое имя файла."}), 400
+            path = os.path.join(ctx["upload_dir"], filename)
+            if not os.path.isfile(path):
+                return jsonify({"ok": False, "error": "Файл не найден."}), 404
+            os.remove(path)
+            index = load_upload_index(ctx["upload_dir"], ctx["upload_index"])
+            if filename in index:
+                index.pop(filename, None)
+                save_upload_index(ctx["upload_dir"], ctx["upload_index"], index)
+            return jsonify({"ok": True})
+        except Exception as e:
+            id_error = error_id_logger(e)
+            return jsonify({"ok": False, "error": f"Ошибка удаления: {id_error}"}), 500
+
+    @app.route("/input_file/file/<path:filename>", methods=["GET"])
+    def input_file_file(filename):
+        try:
+            if "user" not in session:
+                return redirect(url_for("login"))
+
+            ctx, err = require_upload_context()
+            if err:
+                _, status = err
+                return "", status
+
+            if not is_safe_filename(filename):
+                return "", 400
+            if not os.path.isdir(ctx["upload_dir"]):
+                return "", 404
+            return send_from_directory(ctx["upload_dir"], filename, as_attachment=False)
         except Exception as e:
             id_error = error_id_logger(e)
             return render_template("error/error.html", id_error=id_error)

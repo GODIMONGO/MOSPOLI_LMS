@@ -114,3 +114,7 @@ dmypy.json
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Runtime uploads (generated at run time)
+uploads/
+static/uploads/

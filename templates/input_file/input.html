@@ -1,102 +1,94 @@
-<!-- http://127.0.0.1:5000/input_file -->
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    <!-- Bootstrap Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-    
-    <!-- Bootstrap Fileinput CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-fileinput@5.5.4/css/fileinput.min.css" rel="stylesheet">
-    
+    <title>Файлы</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='input_file/input_file.css') }}">
-    
-    <style>
-        .file-zoom-actions .kv-file-rotate,
-        .file-zoom-actions .kv-file-upload {
-            display: none !important;
-        }
-        
-        .kv-file-remove {
-            display: inline-block !important;
-        }
-    </style>
 </head>
 <body>
-    <section class="input-section">
-        <form method="post" enctype="multipart/form-data">
-            <div class="form-input-file">
-                <h3>{{ text_input }}</h3>
-                <input type="file" id="file" name="file" multiple>
+    <div class="page">
+        <section class="file-manager-card">
+            <div class="file-manager-info">
+                Максимальный размер новых файлов: {{ max_file_size_mb }} Мбайт,
+                максимальное количество прикрепленных файлов: {{ max_attached_files }}
             </div>
-            <div class="form-button">
-                <button type="submit" class="btn btn-primary">Отправить</button>
-            </div>
-            <div class="status">
-                <p class="text-success">Статус отправки файлов: {{ status }}</p>
-            </div>
-        </form>
-    </section>
 
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- Popper.js (required for bootstrap-fileinput) -->
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-    
-    <!-- Bootstrap Fileinput JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap-fileinput@5.5.4/js/fileinput.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap-fileinput@5.5.4/js/locales/ru.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap-fileinput@5.5.4/themes/bs5/theme.min.js"></script>
-    
-    <script>
-        $("#file").fileinput({
-            language: 'ru',
-            theme: 'bs5',
-            uploadUrl: '#',
-            allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'doc', 'docx', 'txt'],
-            showUpload: false,
-            showCancel: false,
-            showRemove: true,
-            showClose: false,
-            browseOnZoneClick: true,
-            initialPreviewAsData: true,
-            overwriteInitial: false,
-            maxFileSize: 10240,
-            maxFilesNum: 10,
-            slugCallback: function (filename) {
-                return filename.replace('(', '_').replace(']', '_');
-            },
-            fileActionSettings: {
-                showRemove: true,
-                showUpload: false,
-                showZoom: true,
-                showDrag: false,
-                showRotate: false,
-                removeIcon: '<i class="bi bi-trash"></i>',
-                zoomIcon: '<i class="bi bi-zoom-in"></i>',
-                removeClass: 'btn btn-sm btn-danger',
-                zoomClass: 'btn btn-sm btn-info'
-            },
-            browseClass: "btn btn-primary",
-            browseLabel: "Выбрать файлы",
-            browseIcon: "<i class='bi bi-folder2-open'></i> ",
-            removeClass: "btn btn-secondary",
-            removeLabel: "Удалить все",
-            removeIcon: "<i class='bi bi-trash'></i> ",
-            dropZoneTitle: 'Перетащите файлы сюда или нажмите для выбора',
-            msgPlaceholder: 'Выберите файлы...',
-            previewFileIcon: '<i class="bi bi-file-earmark"></i>',
-            allowedPreviewTypes: ['image', 'html', 'text', 'video', 'audio', 'pdf', 'object']
-        });
+            <div class="file-manager-toolbar" role="toolbar" aria-label="Управление файлами">
+                <div class="toolbar-group">
+                    <button type="button" class="toolbar-btn" id="browse-btn" aria-label="Добавить файлы" title="Добавить файлы">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M12 3a1 1 0 0 1 1 1v7h7a1 1 0 1 1 0 2h-7v7a1 1 0 1 1-2 0v-7H4a1 1 0 1 1 0-2h7V4a1 1 0 0 1 1-1z"/>
+                        </svg>
+                    </button>
+                    <button type="button" class="toolbar-btn toolbar-btn--secondary" id="refresh-btn" aria-label="Обновить список" title="Обновить">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M17.65 6.35A7.95 7.95 0 0 0 12 4C7.58 4 4.01 7.58 4.01 12S7.58 20 12 20c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35Z"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="toolbar-group">
+                    <button type="button" class="toolbar-btn" id="view-grid-btn" aria-label="Вид: плитка" title="Плитка" aria-pressed="true">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M4 4h7v7H4V4zm9 0h7v7h-7V4zM4 13h7v7H4v-7zm9 0h7v7h-7v-7z"/>
+                        </svg>
+                    </button>
+                    <button type="button" class="toolbar-btn" id="view-list-btn" aria-label="Вид: список" title="Список" aria-pressed="false">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M4 6h16v2H4V6zm0 5h16v2H4v-2zm0 5h16v2H4v-2z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="file-manager-path">
+                <div class="path-left">
+                    <span class="path-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M10 4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h6z"/>
+                        </svg>
+                    </span>
+                    <span class="path-text">Файлы • {{ course_id }}</span>
+                </div>
+                <span class="path-count" id="file-count"></span>
+            </div>
+
+            <div class="dropzone" id="dropzone" tabindex="0" aria-label="Перетащите файлы сюда">
+                <input type="file" id="file-input" class="dropzone-input" multiple>
+
+                <div class="upload-queue" id="upload-queue" hidden>
+                    <div class="upload-queue-header">
+                        <h3>Файлы к загрузке</h3>
+                        <button type="button" class="btn-primary" id="upload-btn">Загрузить</button>
+                    </div>
+                    <div class="upload-queue-list" id="upload-queue-list"></div>
+                    <div class="upload-queue-hint">Можно изменить имя перед загрузкой.</div>
+                </div>
+
+                <div class="file-list" id="file-list"></div>
+                <div class="file-empty" id="file-empty">Пока файлов нет.</div>
+            </div>
+
+            <div class="uploader-status" id="uploader-status" role="status" aria-live="polite"></div>
+        </section>
+    </div>
+
+    <div class="modal" id="rename-modal" hidden>
+        <div class="modal-backdrop" data-close></div>
+        <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="rename-title">
+            <h3 id="rename-title">Переименовать файл</h3>
+            <div class="modal-subtitle" id="rename-old"></div>
+            <input type="text" class="modal-input" id="rename-input" placeholder="Новое имя файла">
+            <div class="modal-actions">
+                <button type="button" class="btn-secondary" id="rename-cancel">Отмена</button>
+                <button type="button" class="btn-primary" id="rename-save">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="application/json" id="uploader-config">
+        {{ {"course": course_id, "maxFileSizeMb": max_file_size_mb, "maxFiles": max_attached_files, "allowedExts": allowed_exts} | tojson }}
     </script>
+    <script defer src="{{ url_for('static', filename='input_file/input_file.js') }}"></script>
 </body>
 </html>
