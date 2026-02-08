@@ -1,38 +1,60 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>СДО - Вход</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='login/style_login.css') }}">
 </head>
+
 <body>
+    <!-- Background animated circles -->
+    <div class="bg-circles">
+        <div class="circle circle-1"></div>
+        <div class="circle circle-2"></div>
+        <div class="circle circle-3"></div>
+        <div class="circle circle-4"></div>
+        <div class="circle circle-5"></div>
+        <div class="circle circle-6"></div>
+    </div>
+
     <div class="login-container">
-            <form class="login-form" method="post">
-                <img src="https://e.mospolytech.ru/assets/logo-4d9aa449.png" 
-                    alt="Логотип Мосполитеха" 
-                    onclick="this.classList.add('rotate'); setTimeout(() => this.classList.remove('rotate'), 1000);"
+        <!-- Left side - Big title -->
+        <div class="branding">
+            <h1>Вход<br>в СДО</h1>
+            <p>Система дистанционного обучения Московского Политеха</p>
+        </div>
+
+        <!-- Right side - Login form -->
+        <form class="login-form" method="post">
+            <img src="https://e.mospolytech.ru/assets/logo-4d9aa449.png" alt="Логотип Мосполитеха"
+                onclick="this.classList.add('rotate'); setTimeout(() => this.classList.remove('rotate'), 1000);"
                 draggable="false">
             <h2>Вход в СДО</h2>
             {% if error %}
             <div class="alert">
-                <p class="error-message" style="color: brown;">{{ error }}</p>
+                <p class="error-message">{{ error }}</p>
             </div>
             {% endif %}
             <div class="form-group">
-                <label for="username" style="background-color: transparent;">Логин:</label>
-                <input type="text" id="username" name="username" value="{{ request.form.username }}" required>
+                <label for="username">Логин</label>
+                <input type="text" id="username" name="username" placeholder="Введите логин"
+                    value="{{ request.form.username }}" required>
             </div>
             <div class="form-group">
-                <label for="password" style="background-color: transparent;">Пароль:</label>
-                <input type="password" id="password" name="password" value="{{ request.form.password }}" required>
+                <label for="password">Пароль</label>
+                <input type="password" id="password" name="password" placeholder="Введите пароль"
+                    value="{{ request.form.password }}" required>
             </div>
             <div class="form-group">
-                <label for="2fa" style="background-color: transparent;">2FA:</label>
-                <input type="text" id="2fa" name="2fa" value="{{ request.form.text }}" required>
+                <label for="2fa">2FA</label>
+                <input type="text" id="2fa" name="2fa" placeholder="Код аутентификации" value="{{ request.form.text }}"
+                    required>
             </div>
             <button type="submit" class="btn-submit">Войти</button>
         </form>
     </div>
 </body>
+
 </html>
