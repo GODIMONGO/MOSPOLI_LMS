@@ -26,6 +26,9 @@ jobs:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       CODEX_CONFIG_TOML: ${{ secrets.CODEX_CONFIG_TOML }}
       CODEX_CA_CERT_PEM: ${{ secrets.CODEX_CA_CERT_PEM }}
+      CODEX_LB_DASHBOARD_BASE_URL: ${{ secrets.CODEX_LB_DASHBOARD_BASE_URL }}
+      CODEX_LB_TOTP_SECRET: ${{ secrets.CODEX_LB_TOTP_SECRET }}
+      CODEX_FIREWALL_BOOTSTRAP: ${{ secrets.CODEX_FIREWALL_BOOTSTRAP }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -88,6 +91,72 @@ jobs:
           cat "$HOME/.codex/config.toml"
           codex --version
 
+      - name: Bootstrap firewall allowlist for runner
+        shell: bash
+        run: |
+          bootstrap="${CODEX_FIREWALL_BOOTSTRAP:-true}"
+          bootstrap="$(echo "$bootstrap" | tr '[:upper:]' '[:lower:]')"
+          if [ "$bootstrap" != "true" ] && [ "$bootstrap" != "1" ] && [ "$bootstrap" != "yes" ]; then
+            echo "Firewall bootstrap disabled"
+            exit 0
+          fi
+
+          BASE_URL="${CODEX_LB_DASHBOARD_BASE_URL%/}"
+          if [ -z "$BASE_URL" ]; then
+            BASE_URL="$(awk -F'=' '/^\s*chatgpt_base_url\s*=/{gsub(/[\"[:space:]]/, "", $2); print $2; exit}' "$HOME/.codex/config.toml")"
+            BASE_URL="${BASE_URL%/}"
+          fi
+          if [ -z "$BASE_URL" ]; then
+            echo "::error::Cannot resolve dashboard base URL (set CODEX_LB_DASHBOARD_BASE_URL or chatgpt_base_url)"
+            exit 1
+          fi
+
+          runner_ip="$(curl -fsSL https://api.ipify.org)"
+          if [ -z "$runner_ip" ]; then
+            echo "::error::Failed to resolve runner egress IP"
+            exit 1
+          fi
+          echo "RUNNER_EGRESS_IP=$runner_ip" >> "$GITHUB_ENV"
+          echo "CODEX_LB_EFFECTIVE_BASE_URL=$BASE_URL" >> "$GITHUB_ENV"
+          cookie_file="$RUNNER_TEMP/codex-dashboard.cookie"
+          echo "CODEX_DASHBOARD_COOKIE_FILE=$cookie_file" >> "$GITHUB_ENV"
+
+          curl_auth_args=()
+          if [ -n "$CODEX_LB_TOTP_SECRET" ]; then
+            totp_code="$(python -c 'import base64,hashlib,hmac,os,struct,time; s=os.environ["CODEX_LB_TOTP_SECRET"].strip().replace(" ","").upper(); p="="*((8-len(s)%8)%8); k=base64.b32decode(s+p, casefold=True); c=int(time.time())//30; m=struct.pack(">Q", c); d=hmac.new(k, m, hashlib.sha1).digest(); o=d[-1]&0x0F; code=(struct.unpack(">I", d[o:o+4])[0] & 0x7FFFFFFF) % 1000000; print(f"{code:06d}")')"
+            verify_status="$(curl -sS -o "$RUNNER_TEMP/totp-verify.json" -w "%{http_code}" \
+              -c "$cookie_file" \
+              -H "Content-Type: application/json" \
+              -d "{\"code\":\"$totp_code\"}" \
+              "$BASE_URL/api/dashboard-auth/totp/verify")"
+            if [ "$verify_status" != "200" ]; then
+              echo "::error::TOTP verify failed with HTTP $verify_status"
+              cat "$RUNNER_TEMP/totp-verify.json" || true
+              exit 1
+            fi
+            curl_auth_args=(-b "$cookie_file")
+          fi
+
+          add_status="$(curl -sS -o "$RUNNER_TEMP/firewall-add.json" -w "%{http_code}" \
+            "${curl_auth_args[@]}" \
+            -H "Content-Type: application/json" \
+            -d "{\"ipAddress\":\"$runner_ip\"}" \
+            "$BASE_URL/api/firewall/ips")"
+
+          case "$add_status" in
+            200|201)
+              echo "Firewall allowlist updated for $runner_ip"
+              ;;
+            409)
+              echo "Runner IP already in allowlist: $runner_ip"
+              ;;
+            *)
+              echo "::error::Failed to add runner IP to firewall allowlist (HTTP $add_status)"
+              cat "$RUNNER_TEMP/firewall-add.json" || true
+              exit 1
+              ;;
+          esac
+
       - name: Prepare pull request refs
         if: github.event_name == 'pull_request'
         shell: bash
@@ -131,6 +200,36 @@ jobs:
         shell: bash
         run: |
           cat codex-runtime-prompt.md | codex exec -o codex-final-message.md -
+
+      - name: Cleanup firewall allowlist for runner
+        if: always()
+        shell: bash
+        run: |
+          if [ -z "${RUNNER_EGRESS_IP:-}" ] || [ -z "${CODEX_LB_EFFECTIVE_BASE_URL:-}" ]; then
+            echo "No firewall bootstrap context found, skipping cleanup"
+            exit 0
+          fi
+
+          encoded_ip="$(python -c 'import os,urllib.parse; print(urllib.parse.quote(os.environ["RUNNER_EGRESS_IP"], safe=""))')"
+          curl_auth_args=()
+          if [ -n "${CODEX_DASHBOARD_COOKIE_FILE:-}" ] && [ -f "${CODEX_DASHBOARD_COOKIE_FILE}" ]; then
+            curl_auth_args=(-b "${CODEX_DASHBOARD_COOKIE_FILE}")
+          fi
+
+          delete_status="$(curl -sS -o "$RUNNER_TEMP/firewall-del.json" -w "%{http_code}" \
+            "${curl_auth_args[@]}" \
+            -X DELETE \
+            "${CODEX_LB_EFFECTIVE_BASE_URL}/api/firewall/ips/${encoded_ip}")"
+
+          case "$delete_status" in
+            200|404)
+              echo "Firewall cleanup completed (HTTP $delete_status)"
+              ;;
+            *)
+              echo "::warning::Firewall cleanup returned HTTP $delete_status"
+              cat "$RUNNER_TEMP/firewall-del.json" || true
+              ;;
+          esac
 
       - name: Comment result
         uses: actions/github-script@v7
