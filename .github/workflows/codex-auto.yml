@@ -1,0 +1,151 @@
+name: "Codex Auto (label: codex)"
+
+on:
+  issues:
+    types: [opened, edited, reopened, labeled]
+  pull_request:
+    types: [opened, edited, reopened, synchronize, labeled]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: codex-auto-${{ github.event_name }}-${{ github.event.issue.number || github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  codex-auto:
+    if: >
+      (github.event_name == 'issues' && contains(github.event.issue.labels.*.name, 'codex')) ||
+      (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'codex'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      CODEX_CONFIG_TOML: ${{ secrets.CODEX_CONFIG_TOML }}
+      CODEX_CA_CERT_PEM: ${{ secrets.CODEX_CA_CERT_PEM }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate required secrets
+        shell: bash
+        run: |
+          if [ -z "$OPENAI_API_KEY" ]; then
+            echo "::error::Missing OPENAI_API_KEY secret"
+            exit 1
+          fi
+
+      - name: Install custom CA certificate
+        shell: bash
+        run: |
+          CERT_PATH="$RUNNER_TEMP/codex-custom-ca.crt"
+          if [ -n "$CODEX_CA_CERT_PEM" ]; then
+            if echo "$CODEX_CA_CERT_PEM" | grep -q "BEGIN CERTIFICATE"; then
+              printf '%s\n' "$CODEX_CA_CERT_PEM" > "$CERT_PATH"
+            else
+              echo "$CODEX_CA_CERT_PEM" | base64 -d > "$CERT_PATH"
+            fi
+          else
+            cp .github/codex/certs/cert.pem "$CERT_PATH"
+          fi
+          sudo cp "$CERT_PATH" /usr/local/share/ca-certificates/codex-custom-ca.crt
+          sudo update-ca-certificates
+          echo "NODE_EXTRA_CA_CERTS=$CERT_PATH" >> "$GITHUB_ENV"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Codex CLI
+        shell: bash
+        run: npm install -g @openai/codex@latest
+
+      - name: Configure Codex
+        shell: bash
+        run: |
+          mkdir -p "$HOME/.codex"
+          if [ -n "$CODEX_CONFIG_TOML" ]; then
+            printf '%s\n' "$CODEX_CONFIG_TOML" > "$HOME/.codex/config.toml"
+          else
+            cp .github/codex/config.toml "$HOME/.codex/config.toml"
+          fi
+          echo "Using Codex config:"
+          cat "$HOME/.codex/config.toml"
+          codex --version
+
+      - name: Prepare pull request refs
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          git fetch --no-tags origin "${{ github.event.pull_request.base.ref }}":"${{ github.event.pull_request.base.ref }}"
+          git fetch --no-tags origin "${{ github.event.pull_request.head.sha }}"
+
+      - name: Build runtime prompt
+        id: build_prompt
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require("fs");
+            const isIssue = context.eventName === "issues";
+            const payload = isIssue ? context.payload.issue : context.payload.pull_request;
+            const templatePath = isIssue
+              ? ".github/codex/prompts/issue.md"
+              : ".github/codex/prompts/pull_request.md";
+            const template = fs.readFileSync(templatePath, "utf8");
+            const labels = (payload.labels || []).map((label) => label.name).join(", ") || "(none)";
+            const body = (payload.body || "").trim() || "(empty)";
+
+            const prompt = `${template}
+
+            ## GitHub Context
+            - Event: ${context.eventName}
+            - Repository: ${context.repo.owner}/${context.repo.repo}
+            - Number: #${payload.number}
+            - URL: ${payload.html_url}
+            - Title: ${payload.title}
+            - Labels: ${labels}
+
+            ## Description
+            ${body}
+            `;
+
+            fs.writeFileSync("codex-runtime-prompt.md", prompt);
+            core.setOutput("target_number", String(payload.number));
+
+      - name: Run Codex
+        shell: bash
+        run: |
+          cat codex-runtime-prompt.md | codex exec -o codex-final-message.md -
+
+      - name: Comment result
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require("fs");
+            const issueNumber = Number("${{ steps.build_prompt.outputs.target_number }}");
+            let message = "";
+
+            if (fs.existsSync("codex-final-message.md")) {
+              message = fs.readFileSync("codex-final-message.md", "utf8").trim();
+            }
+            if (!message) {
+              message = "Codex completed, but no final message was produced.";
+            }
+
+            const maxLength = 60000;
+            if (message.length > maxLength) {
+              message = `${message.slice(0, maxLength)}\n\n[truncated]`;
+            }
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              body: `### Codex Auto Run\n\n${message}`
+            });

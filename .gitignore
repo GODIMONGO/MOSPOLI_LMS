@@ -118,3 +118,7 @@ Thumbs.db
 # Runtime uploads (generated at run time)
 uploads/
 static/uploads/
+
+# Codex private keys must never be committed
+.github/codex/certs/*.key
+.github/codex/certs/key.pem
