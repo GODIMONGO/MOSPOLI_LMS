@@ -35,9 +35,18 @@ jobs:
       - name: Validate required secrets
         shell: bash
         run: |
-          if [ -z "$OPENAI_API_KEY" ]; then
-            echo "::error::Missing OPENAI_API_KEY secret"
+          if [ ! -f ".github/codex/certs/cert.pem" ] && [ -z "$CODEX_CA_CERT_PEM" ]; then
+            echo "::error::Missing .github/codex/certs/cert.pem and CODEX_CA_CERT_PEM secret"
             exit 1
+          fi
+
+      - name: Ensure OPENAI_API_KEY compatibility
+        shell: bash
+        run: |
+          if [ -z "$OPENAI_API_KEY" ]; then
+            # Some Codex/OpenAI provider flows expect this env var to exist.
+            # For custom backends that do not validate it, a placeholder is enough.
+            echo "OPENAI_API_KEY=not-required-for-custom-backend" >> "$GITHUB_ENV"
           fi
 
       - name: Install custom CA certificate

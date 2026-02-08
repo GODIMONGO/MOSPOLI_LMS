@@ -12,7 +12,7 @@
 
 3. Интегрировать Codex запуск:
 - Устанавливать Codex CLI в job через `npm install -g @openai/codex@latest`.
-- Подключить `OPENAI_API_KEY` из GitHub Secrets.
+- `OPENAI_API_KEY` опционален для custom backend; при отсутствии выставляется placeholder для совместимости CLI.
 - Использовать репозиторный `.github/codex/config.toml` либо секрет `CODEX_CONFIG_TOML` для override.
 - Установить custom CA certificate из `.github/codex/certs/cert.pem` (или override через `CODEX_CA_CERT_PEM`, raw PEM/base64) перед запуском Codex.
 
