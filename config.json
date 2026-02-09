@@ -1,5 +1,13 @@
 {
     "site": {
-        "version": "1.10.0"
+        "version": "1.11.0"
+    },
+    "redis_url": "redis://redis:6379/0",
+    "logging": {
+        "dir": "logs",
+        "file": "app.log",
+        "level": "INFO",
+        "rotation": "30 MB",
+        "retention": "14 days"
     }
 }

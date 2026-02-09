@@ -422,7 +422,7 @@ body {
 
 .file-list.file-list--grid .file-actions {
     width: 100%;
-    justify-content: flex-end;
+    justify-content: flex-start;
 }
 
 .file-item {
@@ -483,8 +483,31 @@ body {
 
 .file-actions {
     display: flex;
-    align-items: center;
+    align-items: stretch;
+    flex-wrap: wrap;
     gap: 8px;
+}
+
+.file-download {
+    background: #ecfdf5;
+    color: #047857;
+    border: 1px solid #a7f3d0;
+    border-radius: 8px;
+    padding: 0 10px;
+    min-height: 30px;
+    font-size: 1.2rem;
+    font-family: 'Montserrat-Medium', sans-serif;
+    text-decoration: none;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 150ms ease, border-color 150ms ease;
+}
+
+.file-download:hover {
+    background: #d1fae5;
+    border-color: #6ee7b7;
 }
 
 .file-rename {
@@ -492,11 +515,16 @@ body {
     color: var(--accent);
     border: 1px solid #dbe6ff;
     border-radius: 8px;
-    padding: 6px 8px;
-    min-width: 32px;
+    padding: 0;
+    width: 30px;
+    min-width: 30px;
+    min-height: 30px;
     font-size: 1.2rem;
     font-family: 'Montserrat-Medium', sans-serif;
     line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
     transition: background 150ms ease, border-color 150ms ease;
 }
@@ -509,17 +537,23 @@ body {
 .file-delete {
     background: #fee2e2;
     color: #b91c1c;
-    border: none;
+    border: 1px solid #fecaca;
     border-radius: 8px;
-    padding: 6px 10px;
+    padding: 0 10px;
+    min-height: 30px;
     font-size: 1.2rem;
     font-family: 'Montserrat-Medium', sans-serif;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
-    transition: background 150ms ease;
+    transition: background 150ms ease, border-color 150ms ease;
 }
 
 .file-delete:hover {
     background: #fecaca;
+    border-color: #fca5a5;
 }
 
 .file-empty {

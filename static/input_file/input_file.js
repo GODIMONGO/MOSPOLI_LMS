@@ -22,6 +22,7 @@
 
     const config = parseJson(configEl, {});
     const course = String(config.course || "").trim();
+    const uuidForUpload = String(config.uuidForUpload || "").trim();
     const allowedExts = new Set((config.allowedExts || []).map((ext) => ext.toLowerCase()));
     const maxBytes = (config.maxFileSizeMb || 0) * 1024 * 1024;
     const maxFiles = Number(config.maxFiles || 0);
@@ -34,11 +35,24 @@
     let renameFromName = "";
 
     function withCourse(url) {
-        if (!course) {
+        const params = new URLSearchParams();
+        if (course) {
+            params.set("course", course);
+        }
+        if (uuidForUpload) {
+            params.set("uuid_for_upload", uuidForUpload);
+        }
+        const query = params.toString();
+        if (!query) {
             return url;
         }
         const separator = url.includes("?") ? "&" : "?";
-        return `${url}${separator}course=${encodeURIComponent(course)}`;
+        return `${url}${separator}${query}`;
+    }
+
+    function withUuidPath(suffix) {
+        const uuid = encodeURIComponent(uuidForUpload || "");
+        return `/input_file/${uuid}${suffix}`;
     }
 
     function parseJson(el, fallback) {
@@ -204,7 +218,7 @@
         const name = document.createElement("a");
         name.className = "file-name";
         name.textContent = file.name;
-        name.href = file.download_url || "#";
+        name.href = file.preview_url || file.download_url || "#";
         name.target = "_blank";
         name.rel = "noreferrer";
 
@@ -221,6 +235,14 @@
         const actions = document.createElement("div");
         actions.className = "file-actions";
 
+        const downloadLink = document.createElement("a");
+        downloadLink.className = "file-download";
+        downloadLink.textContent = "Скачать";
+        downloadLink.href = file.download_url || "#";
+        downloadLink.target = "_blank";
+        downloadLink.rel = "noreferrer";
+        downloadLink.setAttribute("aria-label", "Скачать файл");
+
         const renameBtn = document.createElement("button");
         renameBtn.type = "button";
         renameBtn.className = "file-rename";
@@ -235,6 +257,7 @@
         deleteBtn.textContent = "Удалить";
         deleteBtn.dataset.name = file.name;
 
+        actions.appendChild(downloadLink);
         actions.appendChild(renameBtn);
         actions.appendChild(deleteBtn);
 
@@ -255,7 +278,7 @@
     }
 
     async function fetchList() {
-        const response = await fetch(withCourse("/input_file/list"), { cache: "no-store" });
+        const response = await fetch(withCourse(withUuidPath("/list")), { cache: "no-store" });
         if (!response.ok) {
             setStatus("Не удалось обновить список файлов.", "error");
             return;
@@ -413,7 +436,7 @@
         renderQueue();
 
         try {
-            const response = await fetch(withCourse("/input_file/upload"), {
+            const response = await fetch(withCourse(withUuidPath("/upload")), {
                 method: "POST",
                 body: formData,
             });
@@ -452,7 +475,7 @@
     async function deleteFile(filename) {
         setStatus("Удаляем файл...", "loading");
         try {
-            const response = await fetch(withCourse("/input_file/delete"), {
+            const response = await fetch(withCourse(withUuidPath("/delete")), {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ name: filename }),
@@ -494,7 +517,7 @@
     async function renameFile(oldName, newName) {
         setStatus("Переименовываем файл...", "loading");
         try {
-            const response = await fetch(withCourse("/input_file/rename"), {
+            const response = await fetch(withCourse(withUuidPath("/rename")), {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ from: oldName, to: newName }),

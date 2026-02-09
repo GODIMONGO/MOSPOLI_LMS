@@ -118,3 +118,4 @@ Thumbs.db
 # Runtime uploads (generated at run time)
 uploads/
 static/uploads/
+logs/
