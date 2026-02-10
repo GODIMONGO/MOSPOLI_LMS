@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>СДО - Вход</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='login/style_login.css') }}">
+    <script src="{{ url_for('static', filename='login/ascii_animation.js') }}" defer></script>
 </head>
 
 <body>
@@ -20,6 +21,10 @@
     </div>
 
     <div class="login-container">
+        <div class="ascii-background" aria-hidden="true">
+            <pre id="ascii-art" data-ascii-art data-art-url="{{ url_for('static', filename='login/ascii-art.txt') }}"></pre>
+        </div>
+
         <!-- Left side - Big title -->
         <div class="branding">
             <h1>

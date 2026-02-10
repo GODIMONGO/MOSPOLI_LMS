@@ -24,17 +24,35 @@ body {
     z-index: 1;
     width: 100%;
     max-width: 1100px;
+    min-height: calc(100vh - 24px);
     padding: 40px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 60px;
+    overflow: hidden;
+}
+
+.ascii-background {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 380px;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
 }
 
 /* Left side - Branding */
 .branding {
     flex: 1;
-    max-width: 500px;
+    max-width: 560px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    position: relative;
+    z-index: 1;
 }
 
 .branding h1 {
@@ -47,7 +65,7 @@ body {
     -webkit-text-fill-color: transparent;
     background-clip: text;
     line-height: 1.1;
-    margin-bottom: 20px;
+    margin-bottom: 0;
     letter-spacing: -0.02em;
     animation: gradient-shift 4s ease infinite;
 }
@@ -88,6 +106,21 @@ body {
     line-height: 1.6;
 }
 
+#ascii-art {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: 8px;
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 12px;
+    line-height: 1;
+    letter-spacing: -0.025em;
+    white-space: pre;
+    color: rgba(30, 35, 45, 0.18);
+    pointer-events: none;
+    user-select: none;
+}
+
 /* Right side - Form with Glassmorphism */
 .login-form {
     background: none;
@@ -97,6 +130,8 @@ body {
     width: 100%;
     max-width: 380px;
     flex-shrink: 0;
+    position: relative;
+    z-index: 2;
 }
 
 .login-form img {
@@ -218,6 +253,15 @@ body {
         text-align: center;
         gap: 30px;
         padding: 30px 20px;
+        min-height: auto;
+    }
+
+    .ascii-background {
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: auto;
+        height: 320px;
     }
 
     .branding {
@@ -265,6 +309,14 @@ body {
 
     .branding p {
         font-size: 0.95rem;
+    }
+
+    #ascii-art {
+        padding: 6px;
+    }
+
+    .ascii-background {
+        height: 250px;
     }
 
     .login-form {
