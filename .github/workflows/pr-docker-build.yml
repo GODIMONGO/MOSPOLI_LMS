@@ -1,0 +1,45 @@
+name: PR Docker Build
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-docker-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-images:
+    name: Build ${{ matrix.name }} image
+    runs-on: ubuntu-24.04
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.draft == false }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: app
+            dockerfile: docker/Dockerfile.app
+          - name: worker
+            dockerfile: docker/Dockerfile.worker
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          push: false
+          tags: mospoli-lms-${{ matrix.name }}:pr-${{ github.event.pull_request.number || github.run_number }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

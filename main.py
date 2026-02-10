@@ -1,15 +1,8 @@
 import hashlib
 import os
-import re
 import secrets
 from uuid import uuid4
-from config import configure_logger, load_app_config
-from flask_socketio import SocketIO
-from loguru import logger
-from routes.gantt import gantt_bp
-from routes.input_file import input_file_bp
-from routes.my_curse import my_curse_bp
-from tasks import broker_init_check
+
 from flask import (
     Flask,
     abort,
@@ -20,6 +13,14 @@ from flask import (
     session,
     url_for,
 )
+from flask_socketio import SocketIO
+from loguru import logger
+
+from config import configure_logger, load_app_config
+from routes.gantt import gantt_bp
+from routes.input_file import input_file_bp
+from routes.my_curse import my_curse_bp
+from tasks import broker_init_check
 
 configure_logger()
 config_data = load_app_config()
@@ -49,7 +50,6 @@ def error_id_logger(error):
     return id_error
 
 
-
 try:
 
     @app.route("/favicon.ico")
@@ -64,7 +64,6 @@ try:
         try:
             if "user" in session:
                 return redirect(url_for("login"))
-            status_dir = "static/execution-status/status.json"
             return
         except Exception as e:
             id_error = error_id_logger(e)
@@ -186,7 +185,6 @@ try:
             checked = "checked" in request.form
             print(f"[toggle_check] fid={fid!r}, checked={checked}")
             checked_map = session.get("checked_files", {})
-            key = fid or request.form.get("fid") or ""
             if fid:
                 checked_map[fid] = checked
             else:
@@ -324,6 +322,7 @@ except Exception as e:
 
 if __name__ == "__main__":
     broker_init_check.send()
+
     def _strip_bom(path):
         try:
             with open(path, "rb") as f:
@@ -337,7 +336,10 @@ if __name__ == "__main__":
             logger.error(f"Error stripping BOM from {path}: {e}")
 
     try:
-        gantt_dir = os.path.join(app.static_folder, "gantt")
+        static_folder = app.static_folder
+        if not static_folder:
+            raise RuntimeError("App static folder is not configured")
+        gantt_dir = os.path.join(static_folder, "gantt")
         if os.path.isdir(gantt_dir):
             for root, _, files in os.walk(gantt_dir):
                 for fn in files:

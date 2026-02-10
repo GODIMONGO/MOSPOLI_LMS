@@ -1,6 +1,8 @@
 import dramatiq
-from broker import broker
 from loguru import logger
+
+from broker import broker
+
 
 @dramatiq.actor(queue_name="for_test")
 def broker_init_check():

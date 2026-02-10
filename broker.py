@@ -1,6 +1,8 @@
-import dramatiq
 import os
+
+import dramatiq
 from dramatiq.brokers.redis import RedisBroker
+
 from config import configure_logger, load_app_config
 
 configure_logger()

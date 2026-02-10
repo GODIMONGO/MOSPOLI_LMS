@@ -6,8 +6,8 @@ import os
 import re
 from datetime import datetime
 from uuid import uuid4
+
 import dramatiq
-from broker import broker as _dramatiq_broker
 from flask import (
     Blueprint,
     jsonify,
@@ -19,6 +19,8 @@ from flask import (
     url_for,
 )
 from loguru import logger
+
+from broker import broker as _dramatiq_broker
 
 _ = _dramatiq_broker
 
@@ -256,12 +258,7 @@ def _build_file_record(upload_dir, filename, config, existing=None, include_hash
     is_image = ext in config["image_exts"]
 
     file_hash = None
-    if (
-        existing
-        and existing.get("size_bytes") == size_bytes
-        and existing.get("modified_ts") == modified_ts
-        and existing.get("hash")
-    ):
+    if existing and existing.get("size_bytes") == size_bytes and existing.get("modified_ts") == modified_ts and existing.get("hash"):
         file_hash = existing.get("hash")
     if include_hash and not file_hash:
         file_hash = _compute_file_hash(path, config)
@@ -346,11 +343,7 @@ def _get_uuid_for_upload_from_request(explicit_uuid=None):
             return uuid_for_upload
     route_uuid = ""
     if request.view_args:
-        route_uuid = str(
-            request.view_args.get("uuid_for_upload")
-            or request.view_args.get("ID_fields")
-            or ""
-        ).strip()
+        route_uuid = str(request.view_args.get("uuid_for_upload") or request.view_args.get("ID_fields") or "").strip()
     uuid_for_upload = route_uuid or (request.args.get("uuid_for_upload") or request.form.get("uuid_for_upload") or "").strip()
     if not uuid_for_upload and request.is_json:
         data = request.get_json(silent=True) or {}
@@ -503,9 +496,7 @@ def upload_files(uuid_for_upload):
 
             is_replacement = filename in index
             if not is_replacement and current_count >= config["max_attached_files"]:
-                errors.append(
-                    f"Превышено максимальное количество файлов: {config['max_attached_files']}."
-                )
+                errors.append(f"Превышено максимальное количество файлов: {config['max_attached_files']}.")
                 continue
 
             target_path = os.path.join(ctx["upload_dir"], filename)
