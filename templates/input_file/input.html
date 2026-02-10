@@ -89,6 +89,6 @@
     <script type="application/json" id="uploader-config">
         {{ {"course": course_id, "uuidForUpload": uuid_for_upload, "maxFileSizeMb": max_file_size_mb, "maxFiles": max_attached_files, "allowedExts": allowed_exts} | tojson }}
     </script>
-    <script defer src="{{ url_for('static', filename='input_file/input_file.js') }}"></script>
+    <script type="module" src="{{ url_for('static', filename='input_file/input_file.js') }}"></script>
 </body>
 </html>
