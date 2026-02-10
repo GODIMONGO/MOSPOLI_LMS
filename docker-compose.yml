@@ -1,0 +1,102 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: mospoli-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: mospoli_db
+      POSTGRES_USER: mospoli_user
+      POSTGRES_PASSWORD: mospoli_password
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  redis:
+    image: redis:8.4
+    container_name: mospoli-redis
+    restart: unless-stopped
+    command: ["redis-server", "--loglevel", "notice", "--logfile", "/data/logs/redis.log"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+      - logs_data:/data/logs
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.app
+    container_name: mospoli-app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      DATABASE_URL: postgresql+psycopg2://mospoli_user:mospoli_password@postgres:5432/mospoli_db
+      PORT: 5000
+      WEB_CONCURRENCY: 2
+      SECRET_KEY: change_this_secret_key
+      LOG_DIR: /shared-logs
+      LOG_FILE: app.log
+      GUNICORN_CMD_ARGS: --access-logfile /shared-logs/gunicorn-access.log --error-logfile /shared-logs/gunicorn-error.log
+    ports:
+      - "5000:5000"
+    volumes:
+      - uploads_data:/app/uploads
+      - logs_data:/shared-logs
+
+  dramatiq_worker:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.worker
+    container_name: mospoli-dramatiq-worker
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      DATABASE_URL: postgresql+psycopg2://mospoli_user:mospoli_password@postgres:5432/mospoli_db
+      DRAMATIQ_PROCESSES: 2
+      DRAMATIQ_THREADS: 4
+      LOG_DIR: /shared-logs
+      LOG_FILE: worker.log
+    volumes:
+      - uploads_data:/app/uploads
+      - logs_data:/shared-logs
+
+  file_storage:
+    build:
+      context: .
+      dockerfile: docker/file_storage/Dockerfile
+    container_name: mospoli-file-storage
+    restart: unless-stopped
+    environment:
+      FILE_STORAGE_USER: storage_admin
+      FILE_STORAGE_PASSWORD: change_this_password
+    ports:
+      - "127.0.0.1:8081:8080"
+    volumes:
+      - uploads_data:/srv/uploads:ro
+      - logs_data:/shared-logs
+
+volumes:
+  redis_data:
+  postgres_data:
+  uploads_data:
+  logs_data:

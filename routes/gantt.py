@@ -191,6 +191,12 @@ def gantt_tasks_modify(id):
 
         store = GANTT_STORE.setdefault(id, {"data": [], "links": []})
 
+        def _as_int(value):
+            try:
+                return int(value)
+            except (TypeError, ValueError):
+                return None
+
         def _next_task_id():
             existing = [int(t["id"]) for t in store["data"] if isinstance(t.get("id"), int)]
             return (max(existing) + 1) if existing else 1
@@ -221,16 +227,20 @@ def gantt_tasks_modify(id):
 
         if request.method == "PUT" or action in ("updated", "update_task", "update_link"):
             if "source" in data and "target" in data:
-                lid = int(data["id"])
-                found = next((l for l in store["links"] if int(l.get("id")) == lid), None)
+                lid = _as_int(data.get("id"))
+                if lid is None:
+                    return jsonify({"error": "link id is required"}), 400
+                found = next((l for l in store["links"] if _as_int(l.get("id")) == lid), None)
                 if not found:
                     return jsonify({"error": "link not found"}), 404
                 found.update(data)
                 logger.info(f"Обновлена ссылка в GANTT {id}: {found}")
                 return jsonify({"action": "updated", "id": lid})
             else:
-                tid = int(data.get("id"))
-                found = next((t for t in store["data"] if int(t.get("id")) == tid), None)
+                tid = _as_int(data.get("id"))
+                if tid is None:
+                    return jsonify({"error": "task id is required"}), 400
+                found = next((t for t in store["data"] if _as_int(t.get("id")) == tid), None)
                 if not found:
                     return jsonify({"error": "task not found"}), 404
                 found.update(data)
@@ -240,13 +250,17 @@ def gantt_tasks_modify(id):
         if request.method == "DELETE" or action in ("deleted", "delete_task", "delete_link"):
             # Delete task or link
             if "id" in data and "source" in data and "target" in data:
-                lid = int(data["id"])
-                store["links"] = [l for l in store["links"] if int(l.get("id")) != lid]
+                lid = _as_int(data.get("id"))
+                if lid is None:
+                    return jsonify({"error": "link id is required"}), 400
+                store["links"] = [l for l in store["links"] if _as_int(l.get("id")) != lid]
                 logger.info(f"Удалена ссылка {lid} из GANTT {id}")
                 return jsonify({"action": "deleted", "id": lid})
             if "id" in data:
-                tid = int(data["id"])
-                store["data"] = [t for t in store["data"] if int(t.get("id")) != tid]
+                tid = _as_int(data.get("id"))
+                if tid is None:
+                    return jsonify({"error": "task id is required"}), 400
+                store["data"] = [t for t in store["data"] if _as_int(t.get("id")) != tid]
                 logger.info(f"Удалена задача {tid} из GANTT {id}")
                 return jsonify({"action": "deleted", "id": tid})
 
@@ -262,7 +276,10 @@ def gantt_static(filename):
         safe = os.path.normpath(filename)
         if safe.startswith(".."):
             return abort(403)
-        file_path = os.path.join(current_app.static_folder, "gantt", safe)
+        static_folder = current_app.static_folder
+        if not static_folder:
+            return abort(404)
+        file_path = os.path.join(static_folder, "gantt", safe)
         if not os.path.isfile(file_path):
             return abort(404)
         if file_path.endswith(".css"):

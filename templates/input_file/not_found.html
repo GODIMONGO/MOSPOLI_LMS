@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Поле загрузки не найдено</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; background: #f7f8fb; color: #1f2937; }
+        .wrap { max-width: 720px; margin: 80px auto; padding: 24px; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; }
+        h1 { margin: 0 0 12px; font-size: 28px; }
+        p { margin: 8px 0; line-height: 1.45; }
+        .code { margin-top: 14px; padding: 10px 12px; background: #f3f4f6; border-radius: 8px; font-family: Consolas, monospace; }
+        .hint { color: #6b7280; }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <h1>Поле загрузки файлов не найдено</h1>
+        {% if uuid_for_upload %}
+        <p>Поле с идентификатором <strong>{{ uuid_for_upload }}</strong> не существует или недоступно.</p>
+        {% else %}
+        <p>Не передан обязательный идентификатор поля загрузки.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

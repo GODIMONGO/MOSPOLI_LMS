@@ -1,0 +1,71 @@
+name: PR Checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-checks-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Quality Gate (full repo)
+    runs-on: ubuntu-24.04
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.draft == false }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: "pip"
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install ruff mypy pylint
+
+      - name: Ruff format (check)
+        run: ruff format --check .
+
+      - name: Ruff lint
+        run: ruff check .
+
+      - name: Mypy
+        run: mypy .
+
+      - name: Pylint
+        run: pylint --rcfile=.pylintrc --recursive=y .
+
+      - name: Bytecode compile smoke check
+        run: python -m compileall -q main.py config.py app_state.py broker.py tasks.py routes libs
+
+      - name: Import smoke check
+        run: |
+          python - <<'PY'
+          import importlib
+
+          modules = (
+              "config",
+              "routes.gantt",
+              "routes.input_file",
+              "routes.my_curse",
+              "main",
+          )
+          for module in modules:
+              importlib.import_module(module)
+          print("Import smoke check passed")
+          PY
+
+      - name: Dependency integrity
+        run: pip check

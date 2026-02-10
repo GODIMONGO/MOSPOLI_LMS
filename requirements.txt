@@ -1,11 +1,12 @@
-Flask==2.3.3
+Flask==3.1.2
 Flask-SQLAlchemy==3.0.5
-Flask-SocketIO==5.3.4
-Werkzeug==2.3.7
+Flask-SocketIO==5.6.0
 openpyxl==3.1.2
 XlsxWriter==3.1.9
-python-socketio==5.8.0
+python-socketio==5.16.1
+werkzeug==3.1.5
 SQLAlchemy==2.0.19
 loguru==0.7.0
+dramatiq==1.17.1
+redis==5.0.8
 gunicorn
-eventlet
