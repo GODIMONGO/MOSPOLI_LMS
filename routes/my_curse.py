@@ -94,13 +94,8 @@ def _build_task_detail_data(task_id, course_id):
                     "href": url_for("input_file.input_file_page", ID_fields="test", course=course_id),
                 },
             ],
-            "answer_comment": (
-                "Добавила пояснения к выбору ключей и обновила диаграмму после замечаний к предыдущей версии."
-            ),
-            "assignment_brief": (
-                "Сформируйте нормализованную структуру таблиц для учебной базы данных и "
-                "приложите итоговый отчет."
-            ),
+            "answer_comment": ("Добавила пояснения к выбору ключей и обновила диаграмму после замечаний к предыдущей версии."),
+            "assignment_brief": ("Сформируйте нормализованную структуру таблиц для учебной базы данных и приложите итоговый отчет."),
             "report_items": [
                 "Краткое описание предметной области и сущностей.",
                 "ER-модель и обоснование связей.",
@@ -130,10 +125,7 @@ def _build_task_detail_data(task_id, course_id):
             }
         ],
         "answer_comment": "Роли согласованы внутри команды. Обновила аргументацию по выбранному лидеру.",
-        "assignment_brief": (
-            "Опишите распределение ролей в проектной команде и приложите краткое обоснование "
-            "для каждой роли."
-        ),
+        "assignment_brief": ("Опишите распределение ролей в проектной команде и приложите краткое обоснование для каждой роли."),
         "report_items": [],
         "materials": [],
     }
@@ -299,9 +291,7 @@ def my_curse(id):
                                     "type": "assignment",
                                     "icon": "my_curse/icons/info.svg",
                                     "title": "Задание. Тема 1 (детали)",
-                                    "href": url_for(
-                                        "my_curse.task_detail", course_id=id, task_id="assignment-team-roles"
-                                    ),
+                                    "href": url_for("my_curse.task_detail", course_id=id, task_id="assignment-team-roles"),
                                     "collapsed": True,
                                     "completed": True,
                                     "with_grade": True,
