@@ -17,7 +17,10 @@ from flask_socketio import SocketIO
 from loguru import logger
 
 from config import configure_logger, load_app_config
+from routes.admin import admin_bp
+from routes.course_builder import course_builder_bp
 from routes.gantt import gantt_bp
+from routes.grades import grades_bp
 from routes.input_file import input_file_bp
 from routes.my_curse import my_curse_bp
 from tasks import broker_init_check
@@ -36,6 +39,9 @@ socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
 app.register_blueprint(gantt_bp)
 app.register_blueprint(my_curse_bp)
 app.register_blueprint(input_file_bp)
+app.register_blueprint(admin_bp)
+app.register_blueprint(course_builder_bp)
+app.register_blueprint(grades_bp)
 
 file_map = {}
 users = {"admin": "admin", "student": "123"}

@@ -24,20 +24,27 @@ header h1 {
 
 /* Стили для кнопок в header */
 .logout-form {
-    display: inline-block;
-    float: right;
-    margin-top: 5px;
-    margin-left: 5px;
+    display: inline-flex;
+    margin: 0;
 }
 
+.logout-form button,
 .back-button {
     background-color: white;
     color: #1779db;
     padding: 8px 16px;
     text-decoration: none;
     border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    font: inherit;
+    line-height: 1.2;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
+.logout-form button:hover,
 .back-button:hover {
     background-color: #f0f0f0;
 }

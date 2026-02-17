@@ -32,6 +32,10 @@
             <img src="{{ url_for('static', filename='images/course-ico.svg') }}" alt="">
             <p>Курс</p>
         </a>
+        <a href="{{ url_for('admin.admin_index') }}" class="flex-item-admin">
+            <img src="{{ url_for('static', filename='images/course-ico.svg') }}" alt="">
+            <p>Админка</p>
+        </a>
     </div>
     <div class="lesson-info">
         <h2>{{ lesson_name }}</h2>
