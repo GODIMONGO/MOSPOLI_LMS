@@ -1,0 +1,136 @@
+{# Reusable content card macros for my_curse page (A09 ownership). #}
+
+{% macro file_row(file) -%}
+<li class="content-card__file-row">
+    <span class="content-card__file-left">
+        {% if file.get('icon') %}
+        <img
+            src="{{ url_for('static', filename=file.get('icon')) }}"
+            alt=""
+            class="content-card__file-icon"
+            aria-hidden="true">
+        {% else %}
+        <span class="content-card__file-icon content-card__file-icon--fallback" aria-hidden="true"></span>
+        {% endif %}
+        {% if file.get('href') %}
+        <a href="{{ file.get('href') }}" class="content-card__file-link">{{ file.get('title', 'Файл') }}</a>
+        {% else %}
+        <span class="content-card__file-link">{{ file.get('title', 'Файл') }}</span>
+        {% endif %}
+    </span>
+    <label class="content-card__check content-card__check--inline" aria-label="Отметить файл выполненным">
+        <input type="checkbox" {% if file.get('checked') %}checked{% endif %}>
+        <span></span>
+    </label>
+</li>
+{%- endmacro %}
+
+{% macro content_card(card, module_id='module', card_index=0) -%}
+{% set card_type = (card.get('type') or 'task')|lower %}
+{% set card_id = card.get('id') or (module_id ~ '-card-' ~ card_index) %}
+{% set body_id = card_id ~ '-body' %}
+{% set is_collapsed = card.get('collapsed', True) %}
+{% set is_completed = card.get('completed', False) %}
+{% set files = card.get('files') or [] %}
+{% set has_files = files|length > 0 %}
+{% set has_comment = card.get('comment') %}
+{% set has_grade = card.get('grade') %}
+{% set has_expandable = card.get('description') or has_comment or has_files %}
+
+<article
+    class="content-card content-card--{{ card_type }} {% if is_collapsed %}is-collapsed{% else %}is-expanded{% endif %} {% if is_completed %}is-completed{% endif %} {% if has_grade %}has-grade{% endif %} {% if has_comment %}has-comment{% endif %} {% if has_files %}has-files{% endif %}"
+    data-card-id="{{ card_id }}"
+    data-card-type="{{ card_type }}">
+
+    <header class="content-card__header">
+        <div class="content-card__title-wrap">
+            {% if card.get('icon') %}
+            <img
+                src="{{ url_for('static', filename=card.get('icon')) }}"
+                alt=""
+                class="content-card__type-icon"
+                aria-hidden="true">
+            {% else %}
+            <span class="content-card__type-icon content-card__type-icon--fallback" aria-hidden="true"></span>
+            {% endif %}
+
+            {% if card.get('href') %}
+            <a href="{{ card.get('href') }}" class="content-card__title">{{ card.get('title', 'Карточка контента') }}</a>
+            {% else %}
+            <h3 class="content-card__title">{{ card.get('title', 'Карточка контента') }}</h3>
+            {% endif %}
+        </div>
+
+        <label class="content-card__check" aria-label="Отметить карточку выполненной">
+            <input type="checkbox" {% if is_completed %}checked{% endif %}>
+            <span></span>
+        </label>
+    </header>
+
+    {% if has_expandable %}
+    <div class="content-card__body" id="{{ body_id }}" aria-hidden="{{ 'true' if is_collapsed else 'false' }}">
+        {% if card.get('description') %}
+        <section class="content-card__panel content-card__panel--description">
+            {{ card.get('description') }}
+        </section>
+        {% endif %}
+
+        {% if has_comment %}
+        <section class="content-card__panel content-card__panel--comment">
+            <h4 class="content-card__panel-title">Комментарий педагога</h4>
+            <p class="content-card__comment">{{ card.get('comment') }}</p>
+        </section>
+        {% endif %}
+
+        {% if has_files %}
+        <section class="content-card__panel content-card__panel--files">
+            <h4 class="content-card__panel-title">Файлы для выполнения</h4>
+            <ul class="content-card__files">
+                {% for file in files %}
+                {{ file_row(file) }}
+                {% endfor %}
+            </ul>
+        </section>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <footer class="content-card__footer">
+        <div class="content-card__meta">
+            {% if card.get('author') %}
+            <span class="content-card__meta-item">{{ card.get('author') }}</span>
+            {% endif %}
+            {% if card.get('date') %}
+            <span class="content-card__meta-item">{{ card.get('date') }}</span>
+            {% endif %}
+            {% if card.get('period') %}
+            <span class="content-card__meta-item">{{ card.get('period') }}</span>
+            {% endif %}
+        </div>
+
+        <div class="content-card__states">
+            {% if is_completed %}
+            <span class="content-card__chip content-card__chip--done">Выполнено</span>
+            {% endif %}
+            {% if has_grade %}
+            <span class="content-card__chip content-card__chip--grade">{{ card.get('grade') }}</span>
+            {% endif %}
+        </div>
+
+        {% if has_expandable %}
+        <button
+            type="button"
+            class="content-card__toggle"
+            aria-controls="{{ body_id }}"
+            aria-expanded="{{ 'false' if is_collapsed else 'true' }}"
+            title="{{ 'Развернуть' if is_collapsed else 'Свернуть' }}">
+            <img
+                src="{{ url_for('static', filename=card.get('arrow_icon', 'my_curse/icons/arrow.svg')) }}"
+                alt=""
+                class="content-card__toggle-icon"
+                aria-hidden="true">
+        </button>
+        {% endif %}
+    </footer>
+</article>
+{%- endmacro %}

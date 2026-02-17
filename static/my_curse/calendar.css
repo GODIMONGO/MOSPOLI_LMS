@@ -1,0 +1,352 @@
+.calendar-block {
+    --calendar-bg: #f4f6fb;
+    --calendar-surface: #ffffff;
+    --calendar-border: #dde3ef;
+    --calendar-text-main: #1f2b3f;
+    --calendar-text-soft: #5f6b7e;
+    --calendar-accent: #654285;
+    --calendar-focus: #3b5ad6;
+    --calendar-success-bg: #d9f4e7;
+    --calendar-success-text: #126b40;
+    --calendar-overdue-bg: #fde6ec;
+    --calendar-overdue-text: #9d2d4a;
+    --calendar-total-bg: #eceefe;
+    --calendar-total-text: #485cb0;
+    border: 1px solid var(--calendar-border);
+    border-radius: 18px;
+    background: linear-gradient(180deg, #f7f8fc 0%, var(--calendar-bg) 100%);
+    padding: 16px;
+    color: var(--calendar-text-main);
+}
+
+.calendar-block__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.calendar-block__titles {
+    min-width: 0;
+}
+
+.calendar-block__kicker {
+    margin: 0 0 4px;
+    color: var(--calendar-text-soft);
+    font-family: "Montserrat-Regular", "Montserrat", sans-serif;
+    font-size: 12px;
+}
+
+.calendar-block__title {
+    margin: 0;
+    font-family: "Montserrat-SemiBold", "Montserrat", sans-serif;
+    font-size: 22px;
+    line-height: 1.25;
+}
+
+.calendar-block__chips {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.calendar-chip {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-family: "Montserrat-Medium", "Montserrat", sans-serif;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.calendar-chip--total {
+    background: var(--calendar-total-bg);
+    color: var(--calendar-total-text);
+}
+
+.calendar-chip--done {
+    background: var(--calendar-success-bg);
+    color: var(--calendar-success-text);
+}
+
+.calendar-chip--overdue {
+    background: var(--calendar-overdue-bg);
+    color: var(--calendar-overdue-text);
+}
+
+.calendar-block__surface {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 14px;
+}
+
+.calendar-block__month,
+.calendar-block__agenda {
+    border: 1px solid var(--calendar-border);
+    border-radius: 14px;
+    background: var(--calendar-surface);
+    padding: 12px;
+}
+
+.calendar-block__month-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.calendar-block__month-label {
+    margin: 0;
+    font-family: "Montserrat-SemiBold", "Montserrat", sans-serif;
+    font-size: 18px;
+}
+
+.calendar-block__timezone {
+    color: var(--calendar-text-soft);
+    font-family: "Montserrat-Regular", "Montserrat", sans-serif;
+    font-size: 12px;
+}
+
+.calendar-block__weekdays,
+.calendar-block__grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 6px;
+}
+
+.calendar-block__weekdays {
+    margin-bottom: 6px;
+}
+
+.calendar-block__weekday {
+    text-align: center;
+    color: var(--calendar-text-soft);
+    font-family: "Montserrat-Medium", "Montserrat", sans-serif;
+    font-size: 12px;
+}
+
+.calendar-day {
+    min-height: 58px;
+}
+
+.calendar-day__control {
+    position: relative;
+    display: grid;
+    align-content: space-between;
+    width: 100%;
+    height: 100%;
+    min-height: 58px;
+    border-radius: 10px;
+    border: 1px solid #e8ecf5;
+    padding: 7px 8px;
+    box-sizing: border-box;
+    text-decoration: none;
+    color: inherit;
+    background: #fbfcfe;
+}
+
+.calendar-day--outside .calendar-day__control {
+    opacity: 0.54;
+}
+
+.calendar-day--today .calendar-day__control {
+    border-color: #8fa4ef;
+    background: #f2f5ff;
+}
+
+.calendar-day--active .calendar-day__control {
+    border-color: #bfa9d8;
+    background: #f5f0fb;
+}
+
+.calendar-day__number {
+    font-family: "Montserrat-Medium", "Montserrat", sans-serif;
+    font-size: 13px;
+    line-height: 1;
+}
+
+.calendar-day__count {
+    justify-self: end;
+    align-self: end;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 999px;
+    background: #eceffe;
+    color: #4353a4;
+    font-family: "Montserrat-SemiBold", "Montserrat", sans-serif;
+    font-size: 11px;
+}
+
+.calendar-day--with-items .calendar-day__control::after {
+    content: "";
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--calendar-accent);
+}
+
+.calendar-block__empty {
+    grid-column: 1 / -1;
+    border: 1px dashed var(--calendar-border);
+    border-radius: 10px;
+    padding: 12px;
+    text-align: center;
+    color: var(--calendar-text-soft);
+    font-family: "Montserrat-Regular", "Montserrat", sans-serif;
+    font-size: 14px;
+}
+
+.calendar-block__agenda-head {
+    display: grid;
+    gap: 4px;
+    margin-bottom: 10px;
+}
+
+.calendar-block__agenda-title {
+    margin: 0;
+    font-family: "Montserrat-SemiBold", "Montserrat", sans-serif;
+    font-size: 16px;
+}
+
+.calendar-block__agenda-date {
+    color: var(--calendar-text-soft);
+    font-family: "Montserrat-Regular", "Montserrat", sans-serif;
+    font-size: 13px;
+}
+
+.calendar-entry-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 8px;
+}
+
+.calendar-entry {
+    display: grid;
+    grid-template-columns: 56px minmax(0, 1fr);
+    gap: 10px;
+    border: 1px solid #e7ebf5;
+    border-left-width: 4px;
+    border-radius: 10px;
+    padding: 9px 10px;
+    background: #fbfcff;
+}
+
+.calendar-entry--planned {
+    border-left-color: #7f91dc;
+}
+
+.calendar-entry--in-progress {
+    border-left-color: #4f7fd6;
+}
+
+.calendar-entry--done {
+    border-left-color: #3da368;
+}
+
+.calendar-entry--overdue {
+    border-left-color: #d64f73;
+}
+
+.calendar-entry__time {
+    color: #445070;
+    font-family: "Montserrat-Medium", "Montserrat", sans-serif;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.calendar-entry__title {
+    margin: 0;
+    color: var(--calendar-text-main);
+    text-decoration: none;
+    font-family: "Montserrat-Medium", "Montserrat", sans-serif;
+    font-size: 14px;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+}
+
+.calendar-entry__meta {
+    margin: 3px 0 0;
+    color: var(--calendar-text-soft);
+    font-family: "Montserrat-Regular", "Montserrat", sans-serif;
+    font-size: 12px;
+    line-height: 1.35;
+}
+
+.calendar-block__agenda-empty {
+    margin: 0;
+    border: 1px dashed var(--calendar-border);
+    border-radius: 10px;
+    padding: 12px;
+    color: var(--calendar-text-soft);
+    font-family: "Montserrat-Regular", "Montserrat", sans-serif;
+    font-size: 14px;
+}
+
+.calendar-block--entry .calendar-block__month {
+    box-shadow: 0 0 0 2px rgba(99, 70, 131, 0.1) inset;
+}
+
+.calendar-block--overview .calendar-block__agenda {
+    background: linear-gradient(180deg, #ffffff 0%, #f9fbff 100%);
+}
+
+.calendar-day__control:focus-visible,
+.calendar-entry__title:focus-visible {
+    outline: 2px solid var(--calendar-focus);
+    outline-offset: 2px;
+}
+
+@media (max-width: 1060px) {
+    .calendar-block__surface {
+        grid-template-columns: 1fr;
+    }
+
+    .calendar-block__agenda {
+        order: 2;
+    }
+}
+
+@media (max-width: 720px) {
+    .calendar-block {
+        padding: 12px;
+        border-radius: 14px;
+    }
+
+    .calendar-block__header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .calendar-block__title {
+        font-size: 18px;
+    }
+
+    .calendar-block__chips {
+        justify-content: flex-start;
+    }
+
+    .calendar-day,
+    .calendar-day__control {
+        min-height: 50px;
+    }
+
+    .calendar-entry {
+        grid-template-columns: 1fr;
+        gap: 6px;
+    }
+}

@@ -1,0 +1,165 @@
+/* A13 mobile overrides for input_file screen */
+
+@media (max-width: 900px) {
+    .page {
+        margin: 16px auto 28px;
+        padding: 0 12px;
+        gap: 14px;
+    }
+
+    .file-manager-card {
+        border-radius: 14px;
+    }
+
+    .file-manager-info {
+        text-align: left;
+        line-height: 1.4;
+    }
+
+    .file-manager-toolbar {
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 8px;
+    }
+
+    .toolbar-group {
+        gap: 8px;
+    }
+
+    .toolbar-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+    }
+
+    .file-manager-path {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+
+    .path-text {
+        overflow-wrap: anywhere;
+    }
+
+    .path-count {
+        align-self: flex-end;
+    }
+
+    .dropzone {
+        min-height: 180px;
+        padding: 10px;
+    }
+
+    .upload-queue {
+        padding: 10px;
+    }
+
+    .upload-queue-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    .upload-queue-header .btn-primary {
+        width: 100%;
+        min-height: 40px;
+    }
+
+    .queue-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        padding: 10px;
+    }
+
+    .queue-remove {
+        min-height: 40px;
+        align-self: flex-end;
+        padding: 0 12px;
+    }
+
+    .file-list.file-list--grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .file-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 10px;
+    }
+
+    .file-info {
+        width: 100%;
+    }
+
+    .file-name {
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
+    .file-actions {
+        width: 100%;
+        justify-content: stretch;
+        gap: 6px;
+    }
+
+    .file-download,
+    .file-delete {
+        flex: 1 1 auto;
+        min-height: 40px;
+        padding: 0 12px;
+    }
+
+    .file-rename {
+        width: 40px;
+        min-width: 40px;
+        min-height: 40px;
+    }
+
+    .modal-dialog {
+        width: calc(100% - 20px);
+        padding: 16px 14px;
+    }
+
+    .modal-actions {
+        flex-direction: column-reverse;
+        justify-content: stretch;
+        gap: 8px;
+    }
+
+    .modal-actions .btn-primary,
+    .modal-actions .btn-secondary {
+        width: 100%;
+        min-height: 40px;
+    }
+}
+
+@media (max-width: 420px) {
+    .page {
+        padding: 0 8px;
+    }
+
+    .file-manager-toolbar {
+        justify-content: space-between;
+    }
+
+    .toolbar-group {
+        flex: 1 1 calc(50% - 4px);
+        justify-content: space-between;
+    }
+
+    .path-text {
+        font-size: 1.3rem;
+    }
+
+    .path-count {
+        font-size: 1.1rem;
+    }
+
+    .file-empty {
+        padding: 22px 0;
+    }
+}
