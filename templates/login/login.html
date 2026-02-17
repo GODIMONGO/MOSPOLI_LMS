@@ -4,35 +4,85 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>СДО - Вход</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='design/tokens.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='design/typography.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='login/style_login.css') }}">
+    <script src="{{ url_for('static', filename='login/ascii_animation.js') }}" defer></script>
 </head>
-<body>
-    <div class="login-container">
+<body class="login-page">
+    <main class="login-container">
+        <div class="ascii-background" aria-hidden="true">
+            <pre id="ascii-art" data-ascii-art data-art-url="{{ url_for('static', filename='login/ascii-art.txt') }}"></pre>
+        </div>
+        <section class="branding">
+            <h1>Вход в СДО</h1>
+            <p>Система дистанционного обучения Московского Политеха</p>
+        </section>
+        <section class="auth-panel">
+            <header class="auth-header">
+                <h2 class="auth-title">Добро пожаловать назад</h2>
+                <p class="auth-subtitle">Войдите, чтобы продолжить работу в системе</p>
+            </header>
             <form class="login-form" method="post">
-                <img src="https://e.mospolytech.ru/assets/logo-4d9aa449.png" 
-                    alt="Логотип Мосполитеха" 
+                <img
+                    class="login-logo"
+                    src="{{ url_for('static', filename='dashboard/icons/logo-4d9aa449.png') }}"
+                    alt="Логотип Мосполитеха"
                     onclick="this.classList.add('rotate'); setTimeout(() => this.classList.remove('rotate'), 1000);"
-                draggable="false">
-            <h2>Вход в СДО</h2>
-            {% if error %}
-            <div class="alert">
-                <p class="error-message" style="color: brown;">{{ error }}</p>
-            </div>
-            {% endif %}
-            <div class="form-group">
-                <label for="username" style="background-color: transparent;">Логин:</label>
-                <input type="text" id="username" name="username" value="{{ request.form.username }}" required>
-            </div>
-            <div class="form-group">
-                <label for="password" style="background-color: transparent;">Пароль:</label>
-                <input type="password" id="password" name="password" value="{{ request.form.password }}" required>
-            </div>
-            <div class="form-group">
-                <label for="2fa" style="background-color: transparent;">2FA:</label>
-                <input type="text" id="2fa" name="2fa" value="{{ request.form.text }}" required>
-            </div>
-            <button type="submit" class="btn-submit">Войти</button>
-        </form>
-    </div>
+                    draggable="false"
+                >
+                {% if error %}
+                <div class="alert">
+                    <p class="error-message">{{ error }}</p>
+                </div>
+                {% endif %}
+                <div class="form-group">
+                    <label for="username">Логин</label>
+                    <div class="input-wrap">
+                        <span class="input-icon" aria-hidden="true">
+                            <svg viewBox="0 0 20 20" fill="none">
+                                <path d="M10 10.3a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" stroke="currentColor" stroke-width="1.5"/>
+                                <path d="M3.8 16.7a6.2 6.2 0 0 1 12.4 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                            </svg>
+                        </span>
+                        <input class="login-input" type="text" id="username" name="username" placeholder="Введите логин"
+                            value="{{ request.form.username }}" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="password">Пароль</label>
+                    <div class="input-wrap">
+                        <span class="input-icon" aria-hidden="true">
+                            <svg viewBox="0 0 20 20" fill="none">
+                                <rect x="4" y="8.5" width="12" height="8" rx="2" stroke="currentColor" stroke-width="1.5"/>
+                                <path d="M6.7 8.5V6.8a3.3 3.3 0 0 1 6.6 0v1.7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                            </svg>
+                        </span>
+                        <input class="login-input" type="password" id="password" name="password" placeholder="Введите пароль"
+                            value="{{ request.form.password }}" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="2fa">2FA код</label>
+                    <div class="input-wrap">
+                        <span class="input-icon" aria-hidden="true">
+                            <svg viewBox="0 0 20 20" fill="none">
+                                <path d="M4.5 6.5h11M4.5 10h11M4.5 13.5h11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                            </svg>
+                        </span>
+                        <input class="login-input login-input--code" type="text" id="2fa" name="2fa" placeholder="000000" value="{{ request.form.text }}" required>
+                    </div>
+                </div>
+                <div class="form-meta">
+                    <label class="remember-me" for="remember">
+                        <input id="remember" name="remember" type="checkbox" value="1">
+                        <span>Запомнить меня</span>
+                    </label>
+                    <a class="forgot-link" href="mailto:support@mospolytech.ru?subject=Восстановление%20доступа">Забыли пароль?</a>
+                </div>
+                <button type="submit" class="btn-submit">Войти</button>
+            </form>
+        </section>
+    </main>
 </body>
 </html>
