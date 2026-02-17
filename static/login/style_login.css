@@ -12,6 +12,7 @@ body {
 
 .login-page {
     min-height: 100vh;
+    padding-bottom: 56px;
     font-family: var(--ds-font-family-base);
     font-feature-settings: "cv02", "cv03", "cv04";
     -webkit-font-smoothing: antialiased;
@@ -392,5 +393,96 @@ body {
     .btn-submit {
         animation: none;
         transition: none;
+    }
+}
+
+.login-footer {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 4;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 16px;
+    border-top: 1px solid #202124;
+    background: #050505;
+    backdrop-filter: blur(4px);
+}
+
+.login-footer-line {
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: #e6e6e6;
+    font-family: var(--ds-font-family-mono);
+    font-size: 12px;
+    line-height: 1.25;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+}
+
+.login-footer-line a {
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.login-footer-line a:hover {
+    color: #ffffff;
+    border-color: #ffffff;
+}
+
+.login-footer-sep {
+    color: #7b7b7b;
+}
+
+.login-footer-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #22c55e;
+    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.25);
+}
+
+@media (max-width: 860px) {
+    .login-footer {
+        min-height: 40px;
+        padding: 8px 10px;
+    }
+
+    .login-footer-line {
+        gap: 8px;
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 640px) {
+    .login-page {
+        padding-bottom: 64px;
+    }
+
+    .login-footer {
+        min-height: 52px;
+        align-items: flex-start;
+        padding-top: 7px;
+    }
+
+    .login-footer-line {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+        white-space: normal;
+        row-gap: 4px;
     }
 }
