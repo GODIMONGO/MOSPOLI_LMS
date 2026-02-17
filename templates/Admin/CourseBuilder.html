@@ -5,8 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="https://e.mospolytech.ru/icon.png" type="image/png">
     <link rel="stylesheet" href="{{ url_for('static', filename='normalize.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='admin/CourseBuilder/CourseBuilder.css') }}">
     <title>СДО - Конструктор курсов</title>
 </head>
 <body>
+    <div class="empty-box">
+        <img src="{{ url_for('static', filename='admin/CourseBuilder/icons/plus.png') }}" alt="Добавить блок", class="img-plus">
+    </div>
 </body>
 </html>
