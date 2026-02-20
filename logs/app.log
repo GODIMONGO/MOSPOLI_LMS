@@ -1,0 +1,13 @@
+2026-02-10 20:53:02.252 | WARNING  | main:<module>:30 - SECRET_KEY not set; generated ephemeral key.
+2026-02-10 20:56:02.922 | WARNING  | main:<module>:31 - SECRET_KEY not set; generated ephemeral key.
+2026-02-10 21:01:28.156 | WARNING  | main:<module>:31 - SECRET_KEY not set; generated ephemeral key.
+2026-02-10 21:23:47.715 | WARNING  | main:<module>:31 - SECRET_KEY not set; generated ephemeral key.
+2026-02-10 21:33:37.439 | WARNING  | __main__:<module>:31 - SECRET_KEY not set; generated ephemeral key.
+2026-02-10 21:34:52.179 | WARNING  | __main__:<module>:31 - SECRET_KEY not set; generated ephemeral key.
+2026-02-10 21:34:54.255 | WARNING  | __main__:<module>:327 - Redis broker init check skipped: Error 10061 connecting to localhost:6379. Подключение не установлено, т.к. конечный компьютер отверг запрос на подключение.
+2026-02-10 21:34:54.512 | WARNING  | __main__:<module>:31 - SECRET_KEY not set; generated ephemeral key.
+2026-02-10 21:34:56.583 | WARNING  | __main__:<module>:327 - Redis broker init check skipped: Error 10061 connecting to localhost:6379. Подключение не установлено, т.к. конечный компьютер отверг запрос на подключение.
+2026-02-10 21:35:24.077 | WARNING  | __main__:<module>:31 - SECRET_KEY not set; generated ephemeral key.
+2026-02-10 21:35:26.145 | WARNING  | __main__:<module>:327 - Redis broker init check skipped: Error 10061 connecting to localhost:6379. Подключение не установлено, т.к. конечный компьютер отверг запрос на подключение.
+2026-02-10 21:35:26.462 | WARNING  | __main__:<module>:31 - SECRET_KEY not set; generated ephemeral key.
+2026-02-10 21:35:28.526 | WARNING  | __main__:<module>:327 - Redis broker init check skipped: Error 10061 connecting to localhost:6379. Подключение не установлено, т.к. конечный компьютер отверг запрос на подключение.

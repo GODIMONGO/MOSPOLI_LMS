@@ -225,6 +225,17 @@ jobs:
         run: |
           git checkout "${{ steps.resolve_refs.outputs.head_sha }}"
 
+      - name: Generate diff for review
+        if: steps.resolve_refs.outputs.is_pr == 'true'
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ] && [ "${{ github.event.action }}" == "synchronize" ]; then
+            git fetch --no-tags origin "${{ github.event.before }}" || true
+            git diff "${{ github.event.before }}" "${{ github.event.after }}" > "$RUNNER_TEMP/pr-diff.txt" || echo "" > "$RUNNER_TEMP/pr-diff.txt"
+          else
+            git diff "${{ steps.resolve_refs.outputs.base_ref }}...${{ steps.resolve_refs.outputs.head_sha }}" > "$RUNNER_TEMP/pr-diff.txt" || echo "" > "$RUNNER_TEMP/pr-diff.txt"
+          fi
+
       - name: Build runtime prompt
         id: build_prompt
         uses: actions/github-script@v7
@@ -292,12 +303,35 @@ jobs:
             - Run relevant validation commands (include \`poe check\` when applicable).
             - In final output include: files changed, risks, and validation results.
             `
-              : `
+              : (isPr ? `
+
+            ## COMMENT MODE (CODE REVIEW)
+            - Do not create git commits or branches.
+            - Provide a formal Code Review based on the Diff provided.
+            - RETURN YOUR ENTIRE OUTPUT AS STRICT VALID JSON. DO NOT WRAP WITH MARKDOWN CODE BLOCKS.
+            - Format:
+            {
+              "review_action": "APPROVE", // or "REQUEST_CHANGES" or "COMMENT"
+              "general_summary": "Overall feedback...",
+              "inline_comments": [
+                { "path": "src/file.js", "line": 42, "body": "Comment" }
+              ]
+            }
+            - "line" in inline_comments MUST correspond to the lines added (+ lines) in the Diff.
+            ` : `
 
             ## COMMENT MODE
             - Do not create git commits or branches.
             - Return analysis/review only.
-            `;
+            `);
+
+            let diffContent = "";
+            if (isPr && fs.existsSync(`${process.env.RUNNER_TEMP}/pr-diff.txt`)) {
+              diffContent = fs.readFileSync(`${process.env.RUNNER_TEMP}/pr-diff.txt`, "utf8");
+              if (diffContent.length > 30000) {
+                diffContent = diffContent.slice(0, 30000) + "\n...[diff truncated due to size]";
+              }
+            }
 
             const prompt = `${template}
 
@@ -314,6 +348,7 @@ jobs:
             ${body}
             ${commentContext}
             ${autoInstruction}
+            ${diffContent ? `\n## Changes to Review (Diff)\n\`\`\`diff\n${diffContent}\n\`\`\`\n` : ""}
             `;
             const promptPath = `${process.env.RUNNER_TEMP}/codex-runtime-prompt.md`;
             fs.writeFileSync(promptPath, prompt);
@@ -432,6 +467,35 @@ jobs:
               message = "Codex completed, but no final message was produced.";
             }
 
+            let reviewFailed = false;
+
+            if (!autoMode && isPr) {
+              try {
+                let jsonStr = message;
+                if (jsonStr.startsWith("```json")) {
+                  jsonStr = jsonStr.replace(/^```json\n/, "").replace(/\n```$/, "");
+                } else if (jsonStr.startsWith("```")) {
+                  jsonStr = jsonStr.replace(/^```\n/, "").replace(/\n```$/, "");
+                }
+                const parsed = JSON.parse(jsonStr);
+
+                await github.rest.pulls.createReview({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: issueNumber,
+                  commit_id: "${{ steps.resolve_refs.outputs.head_sha }}",
+                  event: parsed.review_action || "COMMENT",
+                  body: parsed.general_summary || "Automated Review by Codex",
+                  comments: parsed.inline_comments || []
+                });
+                return;
+              } catch (err) {
+                console.log("Failed to create inline review:", err);
+                message = "Codex attempted a review but it could not be applied (invalid JSON or mismatching lines). Raw output:\n\n```\n" + message + "\n```";
+                reviewFailed = true;
+              }
+            }
+
             const maxLength = 60000;
             if (message.length > maxLength) {
               message = `${message.slice(0, maxLength)}\n\n[truncated]`;
@@ -454,5 +518,5 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: issueNumber,
-              body: `### Codex Auto Run\n\n${message}${autoSummary}`
+              body: reviewFailed ? message : `### Codex Auto Run\n\n${message}${autoSummary}`
             });
