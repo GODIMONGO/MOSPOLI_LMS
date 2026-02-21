@@ -1,11 +1,3 @@
-# MOSPOLI_LMS
-
-Flask LMS-приложение с серверным рендерингом, файловым блоком загрузок, in-memory Gantt API и фоновыми задачами индексации через Dramatiq + Redis.
-
-## 1. Что это за проект
-
-`MOSPOLI_LMS` — монолитное Flask-приложение с частичным разделением по blueprint-модулям.
-
 Ключевые характеристики:
 - HTTP/UI: `main.py` + `routes/*`.
 - Шаблоны: `templates/*`.
@@ -448,7 +440,3 @@ py -3 -m compileall -q main.py config.py app_state.py broker.py tasks.py routes 
 | `main.py` | 383 | Много route-логики и startup-подготовки в одном файле |
 | `templates/gantt/gantt_dhtmlx.html` | 365 | Большой шаблон с насыщенной клиентской логикой |
 | `routes/gantt.py` | 303 | UI endpoint, API CRUD и static-serving в одном модуле |
-
----
-
-Если нужно, следующим шагом могу сделать версию README с отдельными диаграммами под каждый маршрутный домен (`login`, `filesblock`, `input_file`, `gantt`) и добавить sequence-диаграммы request-by-request.
