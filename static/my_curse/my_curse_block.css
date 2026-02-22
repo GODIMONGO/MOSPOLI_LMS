@@ -13,101 +13,182 @@
     src: url('/static/fonts/Montserrat/Montserrat-Regular.ttf') format('truetype')
 }
 
+.course-overview-frame {
+    min-height: 100%;
+    background: linear-gradient(180deg, #f6f7fa 0%, #f3f4f7 100%);
+    border-radius: 20px;
+    padding: 18px 0 28px;
+}
+
 .content-inner {
     width: 100%;
-    max-width: 1290px; 
+    max-width: 1220px;
+    margin: 0 auto;
     box-sizing: border-box;
-    margin-left: auto; 
-    padding-left: 20px;
-    padding-right: 20px;
+    padding: 0 22px;
+}
+
+.overview-header {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+.overview-back {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 36px;
+    padding: 0 14px;
+    border-radius: 11px;
+    border: 1px solid #d8dce5;
+    background: #ffffff;
+    color: #5a6172;
+    text-decoration: none;
+    font-family: 'Montserrat-Medium', sans-serif;
+    font-size: 13px;
+}
+
+.overview-counter {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 36px;
+    padding: 0 14px;
+    border-radius: 11px;
+    background: #ebeefe;
+    color: #4d5fb0;
+    font-family: 'Montserrat-SemiBold', sans-serif;
+    font-size: 13px;
+    white-space: nowrap;
 }
 
 .name_of_curse {
-    margin-left: 30px;
-    font-weight: 700;
-    font-size: 32px;
+    margin: 0;
+    font-family: 'Montserrat-SemiBold', sans-serif;
+    color: #1d2335;
+    font-size: clamp(26px, 2.5vw, 34px);
+    line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
 
+.overview-surface {
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.64);
+    border: 1px solid #e2e5ee;
+    box-shadow: 0 8px 20px rgba(25, 33, 61, 0.06);
+    padding: 16px;
 }
 
 .curse-content {
     display: flex;
-    justify-content: flex-start;
+    flex-direction: column;
+    gap: 14px;
 }
 
-.curse-block{
+.curse-block {
     display: flex;
     flex-direction: column;
-    background-color: #E9FAF0;
-    padding: 16px 20px 36px 20px;
-    border-radius: 15px;
-    width: 90%;
-    max-width: 1290px;
+    padding: 16px 56px 16px 16px;
+    border-radius: 16px;
+    width: 100%;
+    box-sizing: border-box;
     align-items: flex-start;
     text-align: left;
     position: relative;
+    border: 1px solid transparent;
 }
 
-/* header */
+.tone-info {
+    background-color: #c7efd9;
+    border-color: #a6ddbf;
+}
+
+.tone-task {
+    background-color: #d5d9fb;
+    border-color: #babfef;
+}
+
+.tone-video {
+    background-color: #f6d2e8;
+    border-color: #e6b9d3;
+}
+
+.tone-test {
+    background-color: #c4ecf1;
+    border-color: #9fd9e0;
+}
+
 .block-header {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     width: 100%;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
 }
 
 .block-header-flex {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     width: 100%;
-    margin-bottom: 12px;
     justify-content: space-between;
-}
-
-.block-header-flex .h2-block {
-    margin: 0;
-    padding: 0;
-}
-
-.block-header-flex .custom-checkbox {
-    margin-left: 0;
-    align-items: center;
-    display: flex;
-    height: auto;
-}
-
-.custom-checkbox span {
-    margin: 0;
+    gap: 10px;
 }
 
 .h2-block {
+    margin: 0;
     font-weight: 500;
     font-size: 20px;
     font-family: 'Montserrat-Medium', sans-serif;
-    color: #106C3F;
-    margin: 0;
+    color: #1f2b3f;
+    line-height: 1.25;
+    max-width: 760px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
 }
 
-/* items container */
+.block-controls {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.block-items-count {
+    font-family: 'Montserrat-Regular', sans-serif;
+    font-size: 12px;
+    color: #44506b;
+    white-space: nowrap;
+}
+
 .block-items {
     width: 100%;
     display: flex;
     flex-direction: column;
+    gap: 8px;
 }
 
-/* rows with icon + link */
 .list-item {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 8px 0; /* vertical spacing between rows */
+    padding: 9px 10px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.72);
 }
 
-/* icon button next to the text */
 .item-icon {
     width: 20px;
     height: 20px;
-    background-color: #106C3F; /* icon default color */
-    /* используем переменную --mask-url; fallback к дефолтной иконке */
+    display: inline-flex;
+    background-color: #244f74;
     -webkit-mask-image: var(--mask-url, url('icons/todo_list.svg'));
     -webkit-mask-repeat: no-repeat;
     -webkit-mask-position: center;
@@ -118,115 +199,276 @@
     mask-size: contain;
     border: none;
     padding: 0;
-    cursor: pointer;
     flex: 0 0 20px;
     border-radius: 3px;
 }
 
-/* link style */
 .item-link {
-    color: #106C3F;
+    color: #1f2b3f;
     text-decoration: none;
     font-family: 'Montserrat-Regular', sans-serif;
     font-size: 14px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-/* arrow button placed at the bottom-right of the block */
 .cross {
-    width: 22px;
-    height: 22px;
-    background-color: #106C3F;
-    /* используем переменную --mask-url; fallback к дефолтной стрелке */
+    width: 40px;
+    height: 40px;
+    background-color: #1f2b3f;
     -webkit-mask-image: var(--mask-url, url('icons/arrow.svg'));
     -webkit-mask-repeat: no-repeat;
     -webkit-mask-position: center;
-    -webkit-mask-size: contain;
+    -webkit-mask-size: 20px 20px;
     mask-image: var(--mask-url, url('icons/arrow.svg'));
     mask-repeat: no-repeat;
     mask-position: center;
-    mask-size: contain;
-    align-self: center;
+    mask-size: 20px 20px;
     border: none;
     padding: 0;
     cursor: pointer;
     transition: transform 0.18s ease;
     position: absolute;
-    right: 21px;
-    bottom: 18px;
+    right: 8px;
+    bottom: 8px;
     margin: 0;
-    align-self: auto;
 }
 
-/* rotated state for arrow when expanded */
-.cross.rotated {
-    transform: rotate(180deg);
-}
-
-/* expanded block state (optional; change visuals as needed) */
-.curse-block.expanded {
-    box-shadow: 0 8px 20px rgba(0,0,0,0.08); /* example visual change */
-}
-
-/* focus states */
-.item-icon:focus, .cross:focus {
+.cross:focus-visible,
+.overview-back:focus {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(34,144,239,0.18);
+    box-shadow: 0 0 0 3px rgba(55, 104, 223, 0.2);
 }
 
-/* Скрыть элементы блока, когда родитель свернут */
-.curse-block.collapsed .block-items {
+.curse-block.collapsed {
+    padding-bottom: 42px;
+}
+
+.curse-block.collapsed .block-items,
+.curse-block[data-state="collapsed"] .block-items {
     display: none;
 }
 
-/* Анимация/вращение стрелки-кнопки */
-.curse-block .cross {
-    transition: transform 0.18s ease;
-}
-.curse-block:not(.collapsed) .cross {
+.curse-block:not(.collapsed) .cross,
+.curse-block[data-state="expanded"] .cross {
     transform: rotate(180deg);
 }
-.curse-block.collapsed .cross {
+
+.curse-block.collapsed .cross,
+.curse-block[data-state="collapsed"] .cross {
     transform: rotate(0deg);
 }
 
-
-/* Скрываем стандартный чекбокс */
 .custom-checkbox input[type="checkbox"] {
-display: none;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
+    border: 0;
+    white-space: nowrap;
 }
 
-/* Стили для видимой галочки */
+.custom-checkbox {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
 .custom-checkbox span {
-
-display: inline-block;
-width: 20px;
-height: 20px;
-border: 3px solid #654285;
-border-radius: 4px; /* скругление углов */
-position: relative;
-cursor: pointer;
-vertical-align: middle;
-margin-right: 0 auto;
-transition: background-color 0.2s;
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #654285;
+    border-radius: 4px;
+    position: relative;
+    cursor: pointer;
+    transition: background-color 0.2s;
 }
 
-/* Стили галочки при включении */
 .custom-checkbox input[type="checkbox"]:checked + span {
-background-color: transparent;
-border-color: #654285;
+    background-color: transparent;
+    border-color: #654285;
+}
+
+.custom-checkbox input[type="checkbox"]:focus-visible + span {
+    box-shadow: 0 0 0 3px rgba(84, 113, 197, 0.25);
 }
 
 .custom-checkbox input[type="checkbox"]:checked + span::after {
-    display: flex;
-    justify-content: flex-start;
     content: "";
     position: absolute;
     left: 6px;
     top: 1px;
-    width: 6px;
-    height: 12px;
+    width: 5px;
+    height: 11px;
     border: solid #654285;
     border-width: 0 2px 2px 0;
     transform: rotate(45deg);
 }
 
+.empty-state {
+    border-radius: 14px;
+    border: 1px dashed #c8cde0;
+    background: #ffffff;
+    color: #5a6172;
+    font-family: 'Montserrat-Regular', sans-serif;
+    font-size: 14px;
+    padding: 22px 16px;
+}
+
+/* Expanded task card (A10) */
+.task-card {
+    background-color: #c9ccf8;
+    gap: 12px;
+    padding-bottom: 56px;
+}
+
+.task-card-header {
+    margin-bottom: 0;
+}
+
+.task-card-title-wrap {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    min-width: 0;
+}
+
+.task-card-title-wrap .h2-block {
+    color: #30204f;
+    font-family: 'Montserrat-SemiBold', sans-serif;
+    line-height: 1.35;
+    max-width: 100%;
+}
+
+.task-card-type-icon {
+    width: 18px;
+    height: 18px;
+    background-color: #654285;
+    cursor: default;
+    margin-top: 4px;
+}
+
+.task-card-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.task-card-surface {
+    width: 100%;
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 12px 14px;
+    box-sizing: border-box;
+}
+
+.task-card-label {
+    margin: 0 0 8px 0;
+    color: #5a4a71;
+    font-family: 'Montserrat-Medium', sans-serif;
+    font-size: 13px;
+}
+
+.task-card-comment-text {
+    margin: 0;
+    color: #2c2a35;
+    font-family: 'Montserrat-Regular', sans-serif;
+    font-size: 14px;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+
+.task-card-file-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.task-card-file-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid #ece8f4;
+}
+
+.task-card-file-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.task-card-file-icon {
+    width: 18px;
+    height: 18px;
+    flex: 0 0 18px;
+    background-color: #654285;
+}
+
+.task-card-file-link {
+    flex: 1;
+    min-width: 0;
+    color: #3d2e5e;
+    overflow-wrap: anywhere;
+}
+
+.task-card-file-check {
+    margin-left: auto;
+}
+
+.task-card .custom-checkbox span {
+    width: 22px;
+    height: 22px;
+    border-color: #654285;
+}
+
+.task-card .custom-checkbox input[type="checkbox"]:checked + span::after {
+    left: 7px;
+    top: 2px;
+}
+
+.task-card-meta {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.task-card-meta-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+}
+
+.task-card-meta-item {
+    color: #2c2a35;
+    font-family: 'Montserrat-Regular', sans-serif;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.task-card .task-card-toggle {
+    right: 20px;
+    bottom: 18px;
+}
+
+.task-card .task-card-toggle:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(101, 66, 133, 0.22);
+}
+
+@media (max-width: 900px) {
+    .task-card {
+        padding: 14px 14px 52px 14px;
+    }
+
+    .task-card-title-wrap .h2-block {
+        font-size: 18px;
+    }
+}

@@ -4,42 +4,90 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="https://e.mospolytech.ru/icon.png" type="image/png">
-    <link rel="stylesheet" href="{{ url_for('static', filename='header.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard/dashboard.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='normalize.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='design/tokens.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='design/typography.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='layout/lms_shell.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard/dashboard.css') }}">
     <title>СДО - Панель управления</title>
 </head>
-<body>
-    <header>
-        <img class="logo-4d9aa449" src="https://e.mospolytech.ru/assets/logo-4d9aa449.png">
-        <form class="logout-form" method="post" action="{{ url_for('logout') }}">
-            <button type="submit">🔒 Выйти</button>
-        </form>
-    </header>
-    <div class="dashboard">
-        <h2> Добро пожаловать, {{ username }}!</h2>
+{% set profile_name = username if username is defined else session.get('user', 'user') %}
+{% set profile_initial = profile_name[0]|upper if profile_name else 'U' %}
+<body class="lms-layout-page dashboard-page">
+    <div class="lms-layout dashboard-layout">
+        <aside class="lms-sidebar" aria-label="Основная навигация">
+            <a class="lms-sidebar-brand" href="{{ url_for('dashboard') }}" aria-label="Главная">
+                <img class="lms-sidebar-logo" src="{{ url_for('static', filename='dashboard/icons/logo-4d9aa449.png') }}" alt="Логотип LMS">
+            </a>
+
+            <nav class="lms-nav" aria-label="Разделы">
+                <a class="lms-nav-link is-active" href="{{ url_for('dashboard') }}" aria-current="page">Dashboard</a>
+                <a class="lms-nav-link" href="{{ url_for('courses') }}">Мои курсы</a>
+                <a class="lms-nav-link" href="{{ url_for('gantt.gantt_root') }}">Календарь</a>
+                <a class="lms-nav-link" href="{{ url_for('my_curse.task_detail', course_id='1', task_id='assignment-team-roles') }}">Задания</a>
+            </nav>
+
+            <form class="lms-logout-form" method="post" action="{{ url_for('logout') }}" aria-label="Выход из аккаунта">
+                <button type="submit" class="lms-logout-btn">Logout [->]</button>
+            </form>
+        </aside>
+
+        <div class="lms-main">
+            <header class="lms-main-header top-nav">
+                <div class="lms-width-container lms-top-nav-inner">
+                    <nav class="lms-breadcrumbs breadcrumbs" aria-label="Навигационный путь">Главная / Dashboard</nav>
+                    <div class="lms-user-chip user-pill" aria-label="Профиль пользователя">
+                        <span class="lms-user-avatar" aria-hidden="true">{{ profile_initial }}</span>
+                        <span class="lms-user-name">{{ profile_name }}</span>
+                    </div>
+                </div>
+            </header>
+
+            <main class="lms-page-content main-content">
+                <div class="lms-width-container view-container dashboard-content">
+                    <section class="lms-page-header page-header">
+                        <h1 class="lms-main-title">Панель управления</h1>
+                    </section>
+
+                    <section class="dashboard-banner banner-alert lms-unified-block" aria-label="Ближайшее занятие">
+                        <div class="dashboard-banner-content">
+                            <span class="dashboard-status-dot" aria-hidden="true"></span>
+                            <span class="dashboard-banner-label">Live:</span>
+                            <p class="dashboard-banner-text">"{{ lesson_name }}" • {{ lesson_time }} • {{ lesson_lecturer_name }}</p>
+                        </div>
+                        <a class="dashboard-banner-btn btn-primary" href="{{ url_for('my_curse.my_curse', id='1') }}">Войти</a>
+                    </section>
+
+                    <section class="dashboard-cards grid-system" aria-label="Сетка карточек">
+                        <a href="{{ url_for('settings') }}" class="dashboard-card lms-unified-block">
+                            <span class="dashboard-card-title">Настройки</span>
+                            <span class="dashboard-card-text">Профиль, тема и параметры аккаунта</span>
+                        </a>
+                        <article class="dashboard-card dashboard-card-muted lms-unified-block" aria-disabled="true">
+                            <span class="dashboard-card-title">Профиль</span>
+                            <span class="dashboard-card-text">Раздел в разработке</span>
+                        </article>
+                        <a href="{{ url_for('courses') }}" class="dashboard-card lms-unified-block">
+                            <span class="dashboard-card-title">Курсы</span>
+                            <span class="dashboard-card-text">12 активных модулей</span>
+                        </a>
+                        <a href="{{ url_for('gantt.gantt_root') }}" class="dashboard-card lms-unified-block">
+                            <span class="dashboard-card-title">Календарь</span>
+                            <span class="dashboard-card-text">План задач и дедлайнов</span>
+                        </a>
+                    </section>
+
+                    <section class="dashboard-updates feed-section lms-unified-block" aria-label="Последние обновления">
+                        <h2 class="dashboard-updates-title">Последние обновления</h2>
+                        <ul class="dashboard-updates-list feed-list">
+                            <li>Опубликована новая оценка по Математике.</li>
+                            <li>Добавлен новый материал к занятию "{{ lesson_name }}".</li>
+                            <li>Обновлено расписание на эту неделю.</li>
+                        </ul>
+                    </section>
+                </div>
+            </main>
+        </div>
     </div>
-    <div class="flex-container-1">
-        <a href="{{ url_for('settings') }}" class="flex-item-settings">
-            <img src="{{ url_for('static', filename='images/settings-icon.png') }}" alt="">
-            <p>Настройки</p>
-        </a>
-        <a href="#" class="flex-item-profile">
-            <img src="{{ url_for('static', filename='images/profile-icon.png') }}" alt="">
-            <p>Профиль</p>
-        </a>
-        <a href="{{ url_for('courses') }}" class="flex-item-course">
-            <img src="{{ url_for('static', filename='images/course-ico.svg') }}" alt="">
-            <p>Курс</p>
-        </a>
-    </div>
-    <div class="lesson-info">
-        <h2>{{ lesson_name }}</h2>
-        <p>{{ lesson_lecturer_name }}</p>
-        <p>{{ lesson_time }}</p>
-    </div>
-    <footer>
-        <small>© 2025 Система дистанционного обучения</small>
-    </footer>
 </body>
 </html>

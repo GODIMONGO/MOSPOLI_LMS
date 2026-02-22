@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ page_title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='normalize.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='design/tokens.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='design/typography.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='layout/lms_shell.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='my_curse/rhythm.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='my_curse/task_detail.css') }}">
+</head>
+{% set profile_name = session.get('user', 'user') %}
+{% set profile_initial = profile_name[0]|upper if profile_name else 'U' %}
+<body class="lms-layout-page task-detail-page">
+    <div class="lms-layout dashboard-layout">
+        <aside class="lms-sidebar" aria-label="Основная навигация">
+            <a class="lms-sidebar-brand" href="{{ url_for('dashboard') }}" aria-label="Главная">
+                <img class="lms-sidebar-logo" src="{{ url_for('static', filename='dashboard/icons/logo-4d9aa449.png') }}" alt="Логотип LMS">
+            </a>
+
+            <nav class="lms-nav" aria-label="Разделы">
+                <a class="lms-nav-link" href="{{ url_for('dashboard') }}">Dashboard</a>
+                <a class="lms-nav-link" href="{{ url_for('courses') }}">Мои курсы</a>
+                <a class="lms-nav-link" href="{{ url_for('gantt.gantt_root') }}">Календарь</a>
+                <a class="lms-nav-link is-active" href="{{ url_for('my_curse.task_detail', course_id=course_id, task_id=task_id) }}" aria-current="page">Задания</a>
+            </nav>
+
+            <form class="lms-logout-form" method="post" action="{{ url_for('logout') }}" aria-label="Выход из аккаунта">
+                <button type="submit" class="lms-logout-btn">Logout [->]</button>
+            </form>
+        </aside>
+
+        <div class="lms-main">
+            <header class="lms-main-header top-nav">
+                <div class="lms-width-container lms-top-nav-inner">
+                    <nav class="lms-breadcrumbs breadcrumbs" aria-label="Навигационный путь">Главная / Мои курсы / Задание</nav>
+                    <div class="lms-user-chip user-pill" aria-label="Профиль пользователя">
+                        <span class="lms-user-avatar" aria-hidden="true">{{ profile_initial }}</span>
+                        <span class="lms-user-name">{{ profile_name }}</span>
+                    </div>
+                </div>
+            </header>
+
+            <main class="lms-page-content main-content">
+                <div class="lms-width-container view-container task-content">
+                    <section class="lms-page-header page-header task-page-header">
+                        <h1 class="lms-main-title">{{ task.title }}</h1>
+                        <p class="task-identifiers">{{ course_id }} / {{ task_id }}</p>
+                        <div class="task-nav-links">
+                            <a class="task-nav-link" href="{{ url_for('courses') }}">Все разделы</a>
+                            <a class="task-nav-link" href="{{ url_for('my_curse.my_curse', id=course_id) }}">Вернуться в курс</a>
+                        </div>
+                    </section>
+
+                    <section class="task-layout">
+                        <div class="task-main-column">
+                            <section class="task-brief lms-unified-block">
+                                <h2 class="section-title">Текст задания</h2>
+                                <p class="brief-text">{{ task.assignment_brief }}</p>
+                            </section>
+
+                            {% if task.report_items %}
+                            <section class="task-report lms-unified-block">
+                                <h2 class="section-title">Содержание отчета</h2>
+                                <ol class="report-list">
+                                    {% for item in task.report_items %}
+                                    <li>{{ item }}</li>
+                                    {% endfor %}
+                                </ol>
+                            </section>
+                            {% endif %}
+
+                            {% if task.materials %}
+                            <section class="task-materials lms-unified-block">
+                                <h2 class="section-title">Прикрепленные материалы</h2>
+                                <ul class="materials-list">
+                                    {% for material in task.materials %}
+                                    <li>{{ material }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </section>
+                            {% endif %}
+
+                            <section class="task-comment lms-unified-block">
+                                <h2 class="section-title">Комментарий к ответу</h2>
+                                {% if task.has_comment %}
+                                <div class="comment-box">
+                                    <span class="comment-dot" aria-hidden="true"></span>
+                                    <p class="comment-text">{{ task.answer_comment }}</p>
+                                </div>
+                                {% else %}
+                                <p class="meta-empty">Комментарий отсутствует.</p>
+                                {% endif %}
+                            </section>
+                        </div>
+
+                        <aside class="task-sidebar lms-unified-block" aria-label="Информация о выполнении">
+                            <div class="task-sidebar-actions" role="group" aria-label="Действия с ответом">
+                                <a class="action-btn action-btn--primary" href="{{ task.action_edit_url }}">Редактировать ответ</a>
+                                <button class="action-btn action-btn--danger" type="button" disabled>Удалить ответ</button>
+                            </div>
+                            {% if not task.action_delete_available %}
+                            <p class="task-actions-note">Удаление ответа будет доступно после подключения серверного обработчика.</p>
+                            {% endif %}
+
+                            <section class="task-sidebar-group">
+                                <h2 class="meta-title">Статус</h2>
+                                <div class="task-meta-rows">
+                                    <div class="task-meta-row">
+                                        <span class="meta-label">Выполнение</span>
+                                        <span class="status-pill {{ task.completion_class }}">{{ task.completion_status }}</span>
+                                    </div>
+                                    <div class="task-meta-row">
+                                        <span class="meta-label">Оценивание</span>
+                                        <div class="meta-content meta-content--row">
+                                            <span class="status-pill {{ task.grading_class }}">{{ task.grading_status }}</span>
+                                            {% if task.is_graded and task.grade_value is not none %}
+                                            <span class="grade-badge" aria-label="Числовая оценка">{{ task.grade_value }}</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <section class="task-sidebar-group">
+                                <h2 class="meta-title">Последнее изменение</h2>
+                                <p class="meta-text">{{ task.updated_at }}</p>
+                            </section>
+
+                            <section class="task-sidebar-group">
+                                <h2 class="meta-title">Файлы {% if task.has_files %}({{ task.answer_files|length }}){% endif %}</h2>
+                                {% if task.has_files %}
+                                <ul class="file-list">
+                                    {% for file in task.answer_files %}
+                                    <li class="file-row">
+                                        {% if file.href %}
+                                        <a class="file-name" href="{{ file.href }}">{{ file.name }}</a>
+                                        {% else %}
+                                        <span class="file-name">{{ file.name }}</span>
+                                        {% endif %}
+                                        <span class="file-meta">{{ file.meta }}</span>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                                {% else %}
+                                <p class="meta-empty">Файл пока не прикреплен.</p>
+                                {% endif %}
+                            </section>
+
+                            <details class="task-legend">
+                                <summary class="task-legend-summary">Шкала оценок</summary>
+                                <div class="task-legend-pills">
+                                    {% for item in status_legend %}
+                                    <span class="legend-pill {{ item.class_name }}">{{ item.text }}</span>
+                                    {% endfor %}
+                                </div>
+                            </details>
+                        </aside>
+                    </section>
+                </div>
+            </main>
+        </div>
+    </div>
+</body>
+</html>

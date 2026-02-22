@@ -1,0 +1,150 @@
+/* A12 Statuses & Grades UX
+   Source constraints: info.md sections 7, 16.1, 21 */
+
+:root {
+    --a12-status-radius: 999px;
+    --a12-status-font-size: 12px;
+    --a12-status-line-height: 1.25;
+    --a12-status-padding-y: 6px;
+    --a12-status-padding-x: 10px;
+    --a12-status-gap: 6px;
+    --a12-status-font-family: "Montserrat-SemiBold", "Montserrat-Medium", Arial, sans-serif;
+
+    /* Execution statuses */
+    --a12-exec-not-started-bg: #EEF1F5;
+    --a12-exec-not-started-fg: #344054;
+    --a12-exec-not-started-border: #D0D5DD;
+
+    --a12-exec-in-progress-bg: #EDEBFF;
+    --a12-exec-in-progress-fg: #4A2A96;
+    --a12-exec-in-progress-border: #C6BAFF;
+
+    --a12-exec-completed-bg: #DCFCE7;
+    --a12-exec-completed-fg: #166534;
+    --a12-exec-completed-border: #86EFAC;
+
+    --a12-exec-overdue-bg: #FEE2E2;
+    --a12-exec-overdue-fg: #991B1B;
+    --a12-exec-overdue-border: #FCA5A5;
+
+    /* Grade statuses */
+    --a12-grade-not-graded-bg: #EEE8FF;
+    --a12-grade-not-graded-fg: #5B32A8;
+    --a12-grade-not-graded-border: #CBB6FF;
+
+    --a12-grade-satisfactory-bg: #FFF6DB;
+    --a12-grade-satisfactory-fg: #8A4B00;
+    --a12-grade-satisfactory-border: #FFD778;
+
+    --a12-grade-good-bg: #E3F0FF;
+    --a12-grade-good-fg: #004C9A;
+    --a12-grade-good-border: #A6CCFF;
+
+    --a12-grade-excellent-bg: #DFF7E7;
+    --a12-grade-excellent-fg: #0B6A3D;
+    --a12-grade-excellent-border: #7ED9A9;
+
+    --a12-grade-unsatisfactory-bg: #FDE7EC;
+    --a12-grade-unsatisfactory-fg: #9C1D3D;
+    --a12-grade-unsatisfactory-border: #F4A3B8;
+}
+
+.status-chip,
+.status-badge {
+    --status-bg: var(--a12-exec-not-started-bg);
+    --status-fg: var(--a12-exec-not-started-fg);
+    --status-border: var(--a12-exec-not-started-border);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--a12-status-gap);
+    min-height: 28px;
+    padding: var(--a12-status-padding-y) var(--a12-status-padding-x);
+    border: 1px solid var(--status-border);
+    border-radius: var(--a12-status-radius);
+    background: var(--status-bg);
+    color: var(--status-fg);
+    font-family: var(--a12-status-font-family);
+    font-size: var(--a12-status-font-size);
+    line-height: var(--a12-status-line-height);
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.status-chip__score {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 999px;
+    border: 1px solid currentColor;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.status-chip--exec-not-started,
+.status-badge--exec-not-started {
+    --status-bg: var(--a12-exec-not-started-bg);
+    --status-fg: var(--a12-exec-not-started-fg);
+    --status-border: var(--a12-exec-not-started-border);
+}
+
+.status-chip--exec-in-progress,
+.status-badge--exec-in-progress {
+    --status-bg: var(--a12-exec-in-progress-bg);
+    --status-fg: var(--a12-exec-in-progress-fg);
+    --status-border: var(--a12-exec-in-progress-border);
+}
+
+.status-chip--exec-completed,
+.status-badge--exec-completed {
+    --status-bg: var(--a12-exec-completed-bg);
+    --status-fg: var(--a12-exec-completed-fg);
+    --status-border: var(--a12-exec-completed-border);
+}
+
+.status-chip--exec-overdue,
+.status-badge--exec-overdue {
+    --status-bg: var(--a12-exec-overdue-bg);
+    --status-fg: var(--a12-exec-overdue-fg);
+    --status-border: var(--a12-exec-overdue-border);
+}
+
+.status-chip--grade-not-graded,
+.status-badge--grade-not-graded {
+    --status-bg: var(--a12-grade-not-graded-bg);
+    --status-fg: var(--a12-grade-not-graded-fg);
+    --status-border: var(--a12-grade-not-graded-border);
+}
+
+.status-chip--grade-satisfactory,
+.status-badge--grade-satisfactory {
+    --status-bg: var(--a12-grade-satisfactory-bg);
+    --status-fg: var(--a12-grade-satisfactory-fg);
+    --status-border: var(--a12-grade-satisfactory-border);
+}
+
+.status-chip--grade-good,
+.status-badge--grade-good {
+    --status-bg: var(--a12-grade-good-bg);
+    --status-fg: var(--a12-grade-good-fg);
+    --status-border: var(--a12-grade-good-border);
+}
+
+.status-chip--grade-excellent,
+.status-badge--grade-excellent {
+    --status-bg: var(--a12-grade-excellent-bg);
+    --status-fg: var(--a12-grade-excellent-fg);
+    --status-border: var(--a12-grade-excellent-border);
+}
+
+.status-chip--grade-unsatisfactory,
+.status-badge--grade-unsatisfactory {
+    --status-bg: var(--a12-grade-unsatisfactory-bg);
+    --status-fg: var(--a12-grade-unsatisfactory-fg);
+    --status-border: var(--a12-grade-unsatisfactory-border);
+}

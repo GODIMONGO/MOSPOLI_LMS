@@ -1,89 +1,233 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>{{ name }}</title>
-        <link rel="stylesheet" href="{{ url_for('static', filename='my_curse/my_curse.css') }}">
-        <link rel="stylesheet" href="{{ url_for('static', filename='my_curse/my_curse_block.css') }}">
-        <script defer src="{{ url_for('static', filename='my_curse/scripts/script.js') }}"></script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ name }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='normalize.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='design/tokens.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='design/typography.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='layout/lms_shell.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='my_curse/rhythm.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='my_curse/my_curse.css') }}">
+    <script defer src="{{ url_for('static', filename='my_curse/scripts/script.js') }}"></script>
 </head>
-<body>
-    <div class="app-shell" id="appShell">
-        <!-- Sidebar (in-flow so it pushes content) -->
-        <aside class="app-sidebar" id="appSidebar" aria-label="Навигация">
-            <div class="sidebar-top">
-                <div class="sidebar-title">Мои курсы</div>
-            </div>
-            <div class="curse">курс</div>
-            <div class="course-pill">
-                <!-- используем данные с бэка для иконки и текста -->
-                <img src="{{ url_for('static', filename=course_pill['icon']) }}" alt="Курс" class="pill-icon">
-                <span class="pill-text">{{ course_pill['text'] }}</span>
-                <button class="pill-close" title="Скрыть курс">
-                    <img src="{{ url_for('static', filename=course_pill['close_icon']) }}" alt="Скрыть курс" class="close-icon-side">
-                </button>
-            </div>
-            <nav class="sidebar-nav" role="navigation">
-                <a href="/my_curse" class="nav-item active">
-                    <img src="{{ url_for('static', filename='my_curse/icons/course-ico.svg') }}" alt="Курс" class="nav-icon">
-                    <span class="nav-text">Курс</span>
-                </a>
-                <a href="#" class="nav-item">
-                    <img src="{{ url_for('static', filename='my_curse/icons/participants.svg') }}" alt="Участники" class="nav-icon">
-                    <span class="nav-text">Участники</span>
-                </a>
-                <a href="#" class="nav-item">
-                    <img src="{{ url_for('static', filename='my_curse/icons/assessments.svg') }}" alt="Оценки" class="nav-icon">
-                    <span class="nav-text">Оценки</span>
-                </a>
-                <a href="#" class="nav-item">
-                    <img src="{{ url_for('static', filename='my_curse/icons/competencies.svg') }}" alt="Компетенции" class="nav-icon">
-                    <span class="nav-text">Компетенции</span>
-                </a>
-                <a href="#" class="nav-item">
-                    <img src="{{ url_for('static', filename='my_curse/icons/info.svg') }}" alt="Информация" class="nav-icon">
-                    <span class="nav-text">Избранное</span>
-                </a>
+{% set profile_name = session.get('user', 'user') %}
+{% set profile_initial = profile_name[0]|upper if profile_name else 'U' %}
+{% set modules_list = modules if modules is defined else [] %}
+{% set legacy_blocks = blocks if blocks is defined else [] %}
+{% set section_count = (modules_list|length) if modules_list else (legacy_blocks|length) %}
+<body class="lms-layout-page my-course-page">
+    <div class="lms-layout dashboard-layout">
+        <aside class="lms-sidebar" aria-label="Основная навигация">
+            <a class="lms-sidebar-brand" href="{{ url_for('dashboard') }}" aria-label="Главная">
+                <img class="lms-sidebar-logo" src="{{ url_for('static', filename='dashboard/icons/logo-4d9aa449.png') }}" alt="Логотип LMS">
+            </a>
+
+            <nav class="lms-nav" aria-label="Разделы">
+                <a class="lms-nav-link" href="{{ url_for('dashboard') }}">Dashboard</a>
+                <a class="lms-nav-link is-active" href="{{ url_for('courses') }}" aria-current="page">Мои курсы</a>
+                <a class="lms-nav-link" href="{{ url_for('gantt.gantt_root') }}">Календарь</a>
+                <a class="lms-nav-link" href="{{ url_for('my_curse.task_detail', course_id=course_id, task_id='assignment-team-roles') }}">Задания</a>
             </nav>
+
+            <form class="lms-logout-form" method="post" action="{{ url_for('logout') }}" aria-label="Выход из аккаунта">
+                <button type="submit" class="lms-logout-btn">Logout [->]</button>
+            </form>
         </aside>
 
-        <!-- Page content -->
-        <main class="page-content" id="pageContent">   
-            <div class="content-inner">
-                <h1 class='name_of_curse'>{{ name }}</h1>
-                <div class='curse-content'>
-                    {% for block in blocks %}
-
-                    <div class="curse-block {% if block['collapsed'] %}collapsed{% endif %}">
-                        <div class="block-header block-header-flex">
-                            <h2 class="h2-block">{{ block['title'] }}</h2>
-                            <label class="custom-checkbox">
-                                <input type="checkbox">
-                                <span></span>
-                            </label>
-                        </div>
-                        <button class="cross" type="button"
-                            aria-controls="{{ block['id'] }}"
-                            aria-expanded="{{ 'false' if block['collapsed'] else 'true' }}"
-                            aria-label="Кнопка разворачивания"
-                            title="{{ 'Развернуть' if block['collapsed'] else 'Свернуть' }}"
-                            style="--mask-url: url('{{ url_for('static', filename=block['cross_icon']) }}')">
-                        </button>
-                        <div class="block-items" id="{{ block['id'] }}" aria-hidden="{{ 'true' if block['collapsed'] else 'false' }}">
-                            {% for item in block['items'] %}
-                            <div class="list-item">
-                                <!-- inline style задает маску-иконку из бэка -->
-                                <button class="item-icon" aria-hidden="true" title="{{ item['text'] }}" style="--mask-url: url('{{ url_for('static', filename=item['icon']) }}')"></button>
-                                <a href="{{ item['href'] }}" class="item-link">{{ item['text'] }}</a>
-                            </div>
-                            {% endfor %}
-                        </div>
+        <div class="lms-main">
+            <header class="lms-main-header top-nav">
+                <div class="lms-width-container lms-top-nav-inner">
+                    <nav class="lms-breadcrumbs breadcrumbs" aria-label="Навигационный путь">Главная / Мои курсы / {{ course_id }}</nav>
+                    <div class="lms-user-chip user-pill" aria-label="Профиль пользователя">
+                        <span class="lms-user-avatar" aria-hidden="true">{{ profile_initial }}</span>
+                        <span class="lms-user-name">{{ profile_name }}</span>
                     </div>
-                    {% endfor %}
                 </div>
-            </div>
-        </main>
+            </header>
+
+            <main class="lms-page-content main-content">
+                <div class="lms-width-container view-container my-course-content">
+                    <section class="lms-page-header page-header course-page-header">
+                        <h1 class="lms-main-title" title="{{ name }}">{{ name }}</h1>
+                        <p class="course-identifiers">{{ course_id }} / schema {{ schema_version }}</p>
+                        <div class="course-toolbar">
+                            <a class="course-back-link" href="{{ url_for('courses') }}">Все разделы</a>
+                            <span class="course-counter">{{ section_count }} раздел(ов)</span>
+                        </div>
+                    </section>
+
+                    <section class="course-context lms-unified-block" aria-label="Контекст курса">
+                        <div class="course-pill">
+                            <img src="{{ url_for('static', filename=course_pill['icon']) }}" alt="Курс" class="pill-icon">
+                            <span class="pill-text">{{ course_pill['text'] }}</span>
+                            <button class="pill-close" type="button" title="Скрыть курс">
+                                <img src="{{ url_for('static', filename=course_pill['close_icon']) }}" alt="Скрыть курс" class="close-icon-side">
+                            </button>
+                        </div>
+                        <ul class="course-entity-list" aria-label="Сущности курса">
+                            <li><a class="entity-link active" href="#">Общая информация</a></li>
+                            <li><a class="entity-link" href="#">Лабораторные работы</a></li>
+                            <li><a class="entity-link" href="#">Задания</a></li>
+                            <li><a class="entity-link" href="#">Тесты</a></li>
+                        </ul>
+                    </section>
+
+                    <section class="course-modules" aria-label="Разделы курса">
+                        {% if modules_list %}
+                            {% for module in modules_list %}
+                            {% set module_id = module.get('id', 'module-' ~ loop.index) %}
+                            {% set module_title = module.get('title', 'Модуль без названия') %}
+                            {% set module_themes = module.get('themes', []) %}
+                            <article class="curse-block tone-info {% if module.get('collapsed') %}collapsed{% endif %}">
+                                <div class="block-header block-header-flex">
+                                    <h2 class="h2-block" title="{{ module_title }}">{{ module_title }}</h2>
+                                    <div class="block-controls">
+                                        <span class="block-items-count">{{ module_themes|length }} тем(ы)</span>
+                                        <label class="custom-checkbox">
+                                            <input type="checkbox" aria-label="Отметить модуль {{ module_title }}">
+                                            <span></span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <button class="cross" type="button"
+                                    aria-controls="{{ module_id }}"
+                                    aria-expanded="{{ 'false' if module.get('collapsed') else 'true' }}"
+                                    aria-label="{{ 'Развернуть модуль ' ~ module_title if module.get('collapsed') else 'Свернуть модуль ' ~ module_title }}"
+                                    data-label-collapsed="{{ 'Развернуть модуль ' ~ module_title }}"
+                                    data-label-expanded="{{ 'Свернуть модуль ' ~ module_title }}"
+                                    title="{{ 'Развернуть' if module.get('collapsed') else 'Свернуть' }}"
+                                    style="--mask-url: url('{{ url_for('static', filename=module.get('cross_icon', 'my_curse/icons/arrow.svg')) }}')">
+                                </button>
+
+                                <div class="block-items" id="{{ module_id }}" aria-hidden="{{ 'true' if module.get('collapsed') else 'false' }}">
+                                    {% if module_themes %}
+                                        {% for theme in module_themes %}
+                                        {% set theme_id = theme.get('id', module_id ~ '-theme-' ~ loop.index) %}
+                                        {% set theme_title = theme.get('title', 'Тема без названия') %}
+                                        {% set theme_cards = theme.get('cards', []) %}
+                                        {% set theme_tone = theme.get('tone', 'info') %}
+                                        <article class="curse-block tone-{{ theme_tone }} {% if theme.get('collapsed') %}collapsed{% endif %}">
+                                            <div class="block-header block-header-flex">
+                                                <h2 class="h2-block" title="{{ theme_title }}">{{ theme_title }}</h2>
+                                                <div class="block-controls">
+                                                    <span class="block-items-count">{{ theme_cards|length }} карточк(и)</span>
+                                                    <label class="custom-checkbox">
+                                                        <input type="checkbox" aria-label="Отметить тему {{ theme_title }}">
+                                                        <span></span>
+                                                    </label>
+                                                </div>
+                                            </div>
+
+                                            <button class="cross" type="button"
+                                                aria-controls="{{ theme_id }}"
+                                                aria-expanded="{{ 'false' if theme.get('collapsed') else 'true' }}"
+                                                aria-label="{{ 'Развернуть тему ' ~ theme_title if theme.get('collapsed') else 'Свернуть тему ' ~ theme_title }}"
+                                                data-label-collapsed="{{ 'Развернуть тему ' ~ theme_title }}"
+                                                data-label-expanded="{{ 'Свернуть тему ' ~ theme_title }}"
+                                                title="{{ 'Развернуть' if theme.get('collapsed') else 'Свернуть' }}"
+                                                style="--mask-url: url('{{ url_for('static', filename=theme.get('cross_icon', 'my_curse/icons/arrow.svg')) }}')">
+                                            </button>
+
+                                            <div class="block-items" id="{{ theme_id }}" aria-hidden="{{ 'true' if theme.get('collapsed') else 'false' }}">
+                                                {% if theme_cards %}
+                                                    {% for card in theme_cards %}
+                                                    {% set card_title = card.get('title', 'Карточка без названия') %}
+                                                    {% set card_meta = card.get('meta', {}) %}
+                                                    <div class="list-item"
+                                                        data-card-type="{{ card.get('type', 'info') }}"
+                                                        data-state="{{ 'collapsed' if card.get('collapsed', True) else 'expanded' }}"
+                                                        data-completed="{{ 'true' if card.get('completed') else 'false' }}"
+                                                        data-with-grade="{{ 'true' if card.get('with_grade') else 'false' }}"
+                                                        data-with-comment="{{ 'true' if card.get('with_comment') else 'false' }}"
+                                                        data-with-files="{{ 'true' if card.get('with_files') else 'false' }}">
+                                                        <span class="item-icon"
+                                                            aria-hidden="true"
+                                                            title="{{ card_title }}"
+                                                            style="--mask-url: url('{{ url_for('static', filename=card.get('icon', 'my_curse/icons/todo_list.svg')) }}')">
+                                                        </span>
+                                                        <a href="{{ card.get('href', '#') }}" class="item-link" title="{{ card_title }}">{{ card_title }}</a>
+                                                        {% if card_meta.get('author') or card_meta.get('date') or card_meta.get('period') %}
+                                                        <span class="item-meta">
+                                                            {{ card_meta.get('author', '') }}
+                                                            {% if card_meta.get('date') %} • {{ card_meta.get('date') }}{% endif %}
+                                                            {% if card_meta.get('period') %} • {{ card_meta.get('period') }}{% endif %}
+                                                        </span>
+                                                        {% endif %}
+                                                        <label class="custom-checkbox">
+                                                            <input type="checkbox" aria-label="Отметить карточку {{ card_title }}" {% if card.get('completed') %}checked{% endif %}>
+                                                            <span></span>
+                                                        </label>
+                                                    </div>
+                                                    {% endfor %}
+                                                {% else %}
+                                                    <div class="empty-state" role="status">В теме пока нет карточек.</div>
+                                                {% endif %}
+                                            </div>
+                                        </article>
+                                        {% endfor %}
+                                    {% else %}
+                                        <div class="empty-state" role="status">В модуле пока нет тем.</div>
+                                    {% endif %}
+                                </div>
+                            </article>
+                            {% endfor %}
+                        {% elif legacy_blocks %}
+                            {% for block in legacy_blocks %}
+                            {% set block_id = block.get('id', 'block-items-' ~ loop.index) %}
+                            {% set block_title = block.get('title', 'Раздел без названия') %}
+                            {% set block_items = block.get('items', []) %}
+                            {% set block_tone = block.get('tone', 'info') %}
+                            <article class="curse-block tone-{{ block_tone }} {% if block.get('collapsed') %}collapsed{% endif %}">
+                                <div class="block-header block-header-flex">
+                                    <h2 class="h2-block" title="{{ block_title }}">{{ block_title }}</h2>
+                                    <div class="block-controls">
+                                        <span class="block-items-count">{{ block_items|length }} элемент(ов)</span>
+                                        <label class="custom-checkbox">
+                                            <input type="checkbox" aria-label="Отметить раздел {{ block_title }}">
+                                            <span></span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <button class="cross" type="button"
+                                    aria-controls="{{ block_id }}"
+                                    aria-expanded="{{ 'false' if block.get('collapsed') else 'true' }}"
+                                    aria-label="{{ 'Развернуть раздел ' ~ block_title if block.get('collapsed') else 'Свернуть раздел ' ~ block_title }}"
+                                    data-label-collapsed="{{ 'Развернуть раздел ' ~ block_title }}"
+                                    data-label-expanded="{{ 'Свернуть раздел ' ~ block_title }}"
+                                    title="{{ 'Развернуть' if block.get('collapsed') else 'Свернуть' }}"
+                                    style="--mask-url: url('{{ url_for('static', filename=block.get('cross_icon', 'my_curse/icons/arrow.svg')) }}')">
+                                </button>
+
+                                <div class="block-items" id="{{ block_id }}" aria-hidden="{{ 'true' if block.get('collapsed') else 'false' }}">
+                                    {% if block_items %}
+                                        {% for item in block_items %}
+                                        {% set item_text = item.get('text', 'Элемент без названия') %}
+                                        <div class="list-item">
+                                            <span class="item-icon"
+                                                aria-hidden="true"
+                                                title="{{ item_text }}"
+                                                style="--mask-url: url('{{ url_for('static', filename=item.get('icon', 'my_curse/icons/todo_list.svg')) }}')">
+                                            </span>
+                                            <a href="{{ item.get('href', '#') }}" class="item-link" title="{{ item_text }}">{{ item_text }}</a>
+                                        </div>
+                                        {% endfor %}
+                                    {% else %}
+                                        <div class="empty-state" role="status">В разделе пока нет элементов.</div>
+                                    {% endif %}
+                                </div>
+                            </article>
+                            {% endfor %}
+                        {% else %}
+                            <div class="empty-state" role="status">В этом курсе пока нет доступных разделов.</div>
+                        {% endif %}
+                    </section>
+                </div>
+            </main>
+        </div>
     </div>
 </body>
 </html>

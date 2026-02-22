@@ -33,29 +33,47 @@ def gantt(id):
         if "user" not in session:
             return redirect(url_for("login"))
         editable = request.args.get("editable", "1").lower() in ("1", "true", "yes")
+        mobile_timeline_first = request.args.get("mobile_timeline_first", "1").lower() in (
+            "1",
+            "true",
+            "yes",
+        )
         gantt_id = request.args.get("id", id)
 
         def _color_meta(hexcol):
             c = hexcol.lstrip("#")
             r, g, b = int(c[0:2], 16), int(c[2:4], 16), int(c[4:6], 16)
             lum = 0.2126 * r + 0.7152 * g + 0.0722 * b
-            text = "#000" if lum > 160 else "#fff"
-            overlay = "rgba(255,255,255,0.4)" if lum <= 160 else "rgba(0,0,0,0.28)"
-            return {"bg": hexcol, "text": text, "overlay": overlay}
+            text = "#111827" if lum > 170 else "#ffffff"
+            overlay = "rgba(255,255,255,0.32)" if lum <= 170 else "rgba(17,24,39,0.16)"
+            border = "rgba(17,24,39,0.12)"
+            return {"bg": hexcol, "text": text, "overlay": overlay, "border": border}
 
         GANTT_COLORS = {
-            "pink": _color_meta("#f78da7"),
-            "red": _color_meta("#ff5c5c"),
-            "blue": _color_meta("#4aa3f4"),
-            "cyan": _color_meta("#7fd4ff"),
+            "group": _color_meta("#111827"),
+            "task": _color_meta("#2563EB"),
+            "done": _color_meta("#9CA3AF"),
+            "muted": _color_meta("#E5E7EB"),
+            # Backward compatibility with previously saved tasks.
+            "pink": _color_meta("#2563EB"),
+            "red": _color_meta("#111827"),
+            "blue": _color_meta("#2563EB"),
+            "cyan": _color_meta("#9CA3AF"),
         }
+        gantt_legend = [
+            {"name": "Группы", "color_key": "group"},
+            {"name": "Задачи", "color_key": "task"},
+            {"name": "Завершено", "color_key": "done"},
+        ]
         return render_template(
             "gantt/gantt_dhtmlx.html",
             editable=editable,
-            name="демо",
-            subtitle="тест",
+            name="Панель Ганта",
+            subtitle="Календарный план курса и контроль дедлайнов",
             colors=GANTT_COLORS,
+            legend=gantt_legend,
             gantt_id=gantt_id,
+            mobile_timeline_first=mobile_timeline_first,
         )
     except Exception as e:
         id_error = _error_id_logger(e)
@@ -90,7 +108,7 @@ def gantt_tasks(id):
                     "duration": 3,
                     "open": True,
                     "progress": 0.3,
-                    "color": "pink",
+                    "color": "group",
                 },
                 {
                     "id": 2,
@@ -99,7 +117,7 @@ def gantt_tasks(id):
                     "duration": 1,
                     "parent": 1,
                     "progress": 1,
-                    "color": "red",
+                    "color": "done",
                 },
             ]
         else:
@@ -111,7 +129,7 @@ def gantt_tasks(id):
                     "duration": 3,
                     "open": True,
                     "progress": 0.3,
-                    "color": "pink",
+                    "color": "group",
                 },
                 {
                     "id": 2,
@@ -120,7 +138,7 @@ def gantt_tasks(id):
                     "duration": 1,
                     "parent": 1,
                     "progress": 1,
-                    "color": "red",
+                    "color": "done",
                 },
                 {
                     "id": 3,
@@ -129,7 +147,7 @@ def gantt_tasks(id):
                     "duration": 2,
                     "parent": 1,
                     "progress": 0.4,
-                    "color": "pink",
+                    "color": "task",
                 },
                 {
                     "id": 4,
@@ -138,7 +156,7 @@ def gantt_tasks(id):
                     "duration": 9,
                     "open": True,
                     "progress": 0.2,
-                    "color": "blue",
+                    "color": "group",
                 },
                 {
                     "id": 5,
@@ -147,7 +165,7 @@ def gantt_tasks(id):
                     "duration": 4,
                     "parent": 4,
                     "progress": 0.2,
-                    "color": "cyan",
+                    "color": "task",
                 },
                 {
                     "id": 6,
@@ -156,7 +174,7 @@ def gantt_tasks(id):
                     "duration": 5,
                     "parent": 4,
                     "progress": 0.1,
-                    "color": "cyan",
+                    "color": "task",
                 },
             ]
         links = [
