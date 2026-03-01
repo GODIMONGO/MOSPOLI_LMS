@@ -14,6 +14,10 @@ def is_admin() -> bool:
 
 def current_user_id() -> int | None:
     value = session.get("user_id")
+    if isinstance(value, int):
+        return value
+    if not isinstance(value, str):
+        return None
     try:
         return int(value)
     except (TypeError, ValueError):

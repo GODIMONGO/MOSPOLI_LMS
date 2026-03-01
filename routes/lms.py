@@ -59,7 +59,7 @@ def _build_student_course_detail_payload(db_session, student_course: StudentCour
     test_results = db_session.scalars(select(TestResult).where(TestResult.student_course_id == student_course.id)).all()
     submissions = db_session.scalars(select(AssignmentSubmission).where(AssignmentSubmission.student_course_id == student_course.id)).all()
     test_map = {row.course_item_id: row for row in test_results}
-    submission_counts = {}
+    submission_counts: dict[int, int] = {}
     for row in submissions:
         submission_counts[row.course_item_id] = submission_counts.get(row.course_item_id, 0) + 1
 
@@ -161,13 +161,13 @@ def courses_collection():
     if request.method == "GET":
         with session_scope() as db_session:
             courses = db_session.scalars(select(Course).order_by(Course.id.asc())).all()
-            payload = []
+            courses_payload = []
             for course in courses:
                 items_count = db_session.scalar(select(func.count()).select_from(CourseItem).where(CourseItem.course_id == course.id))
                 assignments_count = db_session.scalar(
                     select(func.count()).select_from(StudentCourse).where(StudentCourse.course_id == course.id)
                 )
-                payload.append(
+                courses_payload.append(
                     {
                         "id": course.id,
                         "course_code": course.course_code,
@@ -179,7 +179,7 @@ def courses_collection():
                         "assignments_count": int(assignments_count or 0),
                     }
                 )
-        return jsonify({"courses": payload})
+        return jsonify({"courses": courses_payload})
 
     data = request.get_json(silent=True) or {}
     title = str(data.get("title") or "").strip()
@@ -200,13 +200,13 @@ def courses_collection():
         )
         db_session.add(course)
         db_session.flush()
-        payload = {
+        course_payload = {
             "id": course.id,
             "course_code": course.course_code,
             "title": course.title,
             "description": course.description,
         }
-    return jsonify({"course": payload}), 201
+    return jsonify({"course": course_payload}), 201
 
 
 @lms_bp.route("/api/lms/courses/<int:course_id>/items", methods=["GET", "POST"])
