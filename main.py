@@ -1,11 +1,15 @@
+# pylint: disable=not-callable
+
 import hashlib
 import os
 import secrets
+import threading
 from uuid import uuid4
 
 from flask import (
     Flask,
     abort,
+    jsonify,
     redirect,
     render_template,
     request,
@@ -15,10 +19,17 @@ from flask import (
 )
 from flask_socketio import SocketIO
 from loguru import logger
+from sqlalchemy import func, select
+from sqlalchemy.exc import IntegrityError
+from werkzeug.security import check_password_hash, generate_password_hash
 
+from auth_helpers import is_admin
 from config import configure_logger, load_app_config
+from db import init_database, session_scope
+from models import User, UserRole
 from routes.gantt import gantt_bp
 from routes.input_file import input_file_bp
+from routes.lms import lms_bp
 from routes.my_curse import my_curse_bp
 from tasks import broker_init_check
 
@@ -36,9 +47,9 @@ socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
 app.register_blueprint(gantt_bp)
 app.register_blueprint(my_curse_bp)
 app.register_blueprint(input_file_bp)
+app.register_blueprint(lms_bp)
 
 file_map = {}
-users = {"admin": "admin", "student": "123"}
 # Colors used by Gantt tasks. Keys are safe identifiers used in task.color.
 # Values are CSS color strings (hex or any CSS color).
 load_files = ""
@@ -48,6 +59,52 @@ def error_id_logger(error):
     id_error = str(uuid4())
     logger.error(f"ID: {id_error} Ошибка: {error}")
     return id_error
+
+
+def _seed_default_users() -> None:
+    admin_username = os.getenv("ADMIN_USERNAME", "admin")
+    admin_password = os.getenv("ADMIN_PASSWORD", "admin")
+    student_username = os.getenv("STUDENT_USERNAME", "student")
+    student_password = os.getenv("STUDENT_PASSWORD", "123")
+
+    try:
+        with session_scope() as db_session:
+            existing_admin = db_session.scalar(select(User).where(User.username == admin_username))
+            if existing_admin is None:
+                db_session.add(
+                    User(
+                        username=admin_username,
+                        password_hash=generate_password_hash(admin_password),
+                        role=UserRole.ADMIN.value,
+                    )
+                )
+
+            existing_student = db_session.scalar(select(User).where(User.username == student_username))
+            if existing_student is None:
+                db_session.add(
+                    User(
+                        username=student_username,
+                        password_hash=generate_password_hash(student_password),
+                        role=UserRole.STUDENT.value,
+                    )
+                )
+    except IntegrityError:
+        logger.info("Default users were seeded by another worker.")
+
+
+_db_ready_event = threading.Event()
+_db_init_lock = threading.Lock()
+
+
+def _ensure_database_ready() -> None:
+    if _db_ready_event.is_set():
+        return
+    with _db_init_lock:
+        if _db_ready_event.is_set():
+            return
+        init_database()
+        _seed_default_users()
+        _db_ready_event.set()
 
 
 try:
@@ -69,6 +126,23 @@ try:
             id_error = error_id_logger(e)
             return render_template("error/error.html", id_error=id_error)
 
+    @app.before_request
+    def hydrate_session_user():
+        _ensure_database_ready()
+        username = session.get("user")
+        if not username:
+            return None
+        if session.get("user_id") and session.get("role"):
+            return None
+        with session_scope() as db_session:
+            user = db_session.scalar(select(User).where(User.username == username))
+        if user is None:
+            session.clear()
+            return redirect(url_for("login"))
+        session["user_id"] = user.id
+        session["role"] = user.role
+        return None
+
     @app.route("/")
     def index():
         try:
@@ -88,6 +162,8 @@ try:
             success = None
             comment_text = None
             if request.method == "POST":
+                if not is_admin():
+                    return "", 403
                 comment_text = request.form.get("message")
                 received_entity_id = request.form.get("entity_id")
                 uuid_input = request.form.get("uuid_input")
@@ -181,6 +257,8 @@ try:
     @app.route("/filesblock/toggle", methods=["POST"])
     def toggle_check():
         try:
+            if not is_admin():
+                return "", 403
             fid = request.form.get("fid")
             checked = "checked" in request.form
             print(f"[toggle_check] fid={fid!r}, checked={checked}")
@@ -221,6 +299,8 @@ try:
         try:
             if request.method == "POST":
                 session.pop("user", None)
+                session.pop("user_id", None)
+                session.pop("role", None)
                 return redirect(url_for("login"))
             return render_template("logout.html")
         except Exception as e:
@@ -233,6 +313,8 @@ try:
             if "user" not in session:
                 return redirect(url_for("login"))
             if request.method == "POST":
+                if not is_admin():
+                    return "", 403
                 # Получаем данные из формы
                 theme = request.form.get("theme")
                 session["theme"] = theme
@@ -244,6 +326,47 @@ try:
 
     # Список курсов для передачи в шаблон
     # count_number_task - 1 ячейка = 1 тема в курсе
+    @app.route("/api/admin/users", methods=["GET"])
+    def admin_users_list():
+        if "user" not in session:
+            return jsonify({"error": "not authenticated"}), 401
+        if not is_admin():
+            return jsonify({"error": "admin role required"}), 403
+        with session_scope() as db_session:
+            users = db_session.scalars(select(User).order_by(User.id.asc())).all()
+        payload = [{"id": user.id, "username": user.username, "role": user.role} for user in users]
+        return jsonify({"users": payload})
+
+    @app.route("/api/admin/users/<int:user_id>/role", methods=["POST"])
+    def admin_set_user_role(user_id: int):
+        if "user" not in session:
+            return jsonify({"error": "not authenticated"}), 401
+        if not is_admin():
+            return jsonify({"error": "admin role required"}), 403
+
+        data = request.get_json(silent=True) or {}
+        role = str(data.get("role") or "").strip().lower()
+        if role not in {UserRole.ADMIN.value, UserRole.STUDENT.value}:
+            return jsonify({"error": "role must be 'admin' or 'student'"}), 400
+
+        with session_scope() as db_session:
+            user = db_session.get(User, user_id)
+            if user is None:
+                return jsonify({"error": "user not found"}), 404
+
+            if user.role == UserRole.ADMIN.value and role == UserRole.STUDENT.value:
+                admin_count = db_session.scalar(select(func.count()).select_from(User).where(User.role == UserRole.ADMIN.value))
+                if int(admin_count or 0) <= 1:
+                    return jsonify({"error": "cannot demote the last admin"}), 409
+
+            user.role = role
+            updated = {"id": user.id, "username": user.username, "role": user.role}
+
+        if session.get("user_id") == user_id:
+            session["role"] = role
+
+        return jsonify({"user": updated})
+
     courses_data = [
         {"name": "Основы проектирования БД", "count": 6, "stat": 100, "count_number_task": 12},
         {"name": "Основы программирования", "count": 10, "stat": 80, "count_number_task": 15},
@@ -286,13 +409,18 @@ try:
         try:
             error = None
             if request.method == "POST":
-                username = request.form.get("username")
-                password = request.form.get("password")
-                if username in users and users[username] == password:
-                    session["user"] = username
+                username = (request.form.get("username") or "").strip()
+                password = request.form.get("password") or ""
+
+                with session_scope() as db_session:
+                    user = db_session.scalar(select(User).where(User.username == username))
+
+                if user and check_password_hash(user.password_hash, password):
+                    session["user"] = user.username
+                    session["user_id"] = user.id
+                    session["role"] = user.role
                     return redirect(url_for("dashboard"))
-                else:
-                    error = "Неверное имя пользователя или пароль"
+                error = "Неверное имя пользователя или пароль"
             return render_template("login/login.html", error=error)
         except Exception as e:
             id_error = error_id_logger(e)
