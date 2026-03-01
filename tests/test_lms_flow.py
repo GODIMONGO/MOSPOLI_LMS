@@ -1,14 +1,13 @@
 import base64
 import json
 import os
-import uuid
 import unittest
+import uuid
 from http import HTTPStatus
 from http.cookiejar import CookieJar
 from urllib.error import HTTPError
 from urllib.parse import urlencode
 from urllib.request import HTTPCookieProcessor, Request, build_opener
-
 
 BASE_URL = os.getenv("TEST_BASE_URL", "http://localhost:5000")
 

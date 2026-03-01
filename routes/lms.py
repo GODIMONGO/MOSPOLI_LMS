@@ -4,7 +4,7 @@ import base64
 from datetime import datetime
 from uuid import uuid4
 
-from flask import Blueprint, jsonify, request, session
+from flask import Blueprint, jsonify, request
 from sqlalchemy import delete, func, select
 
 from auth_helpers import current_user_id, is_admin, require_auth_json
