@@ -340,9 +340,7 @@ try:
                 return jsonify({"error": "user not found"}), 404
 
             if user.role == UserRole.ADMIN.value and role == UserRole.STUDENT.value:
-                admin_count = db_session.scalar(
-                    select(func.count()).select_from(User).where(User.role == UserRole.ADMIN.value)
-                )
+                admin_count = db_session.scalar(select(func.count()).select_from(User).where(User.role == UserRole.ADMIN.value))
                 if int(admin_count or 0) <= 1:
                     return jsonify({"error": "cannot demote the last admin"}), 409
 

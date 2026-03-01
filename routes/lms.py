@@ -56,12 +56,8 @@ def _build_student_course_detail_payload(db_session, student_course: StudentCour
     items = db_session.scalars(
         select(CourseItem).where(CourseItem.course_id == student_course.course_id).order_by(CourseItem.id.asc())
     ).all()
-    test_results = db_session.scalars(
-        select(TestResult).where(TestResult.student_course_id == student_course.id)
-    ).all()
-    submissions = db_session.scalars(
-        select(AssignmentSubmission).where(AssignmentSubmission.student_course_id == student_course.id)
-    ).all()
+    test_results = db_session.scalars(select(TestResult).where(TestResult.student_course_id == student_course.id)).all()
+    submissions = db_session.scalars(select(AssignmentSubmission).where(AssignmentSubmission.student_course_id == student_course.id)).all()
     test_map = {row.course_item_id: row for row in test_results}
     submission_counts = {}
     for row in submissions:
@@ -112,13 +108,17 @@ def _build_student_course_detail_payload(db_session, student_course: StudentCour
 
 def _refresh_student_course_status(db_session, student_course: StudentCourse) -> None:
     test_count = db_session.scalar(
-        select(func.count()).select_from(CourseItem).where(
+        select(func.count())
+        .select_from(CourseItem)
+        .where(
             CourseItem.course_id == student_course.course_id,
             CourseItem.item_type == CourseItemType.TEST.value,
         )
     )
     completed_tests = db_session.scalar(
-        select(func.count()).select_from(TestResult).where(
+        select(func.count())
+        .select_from(TestResult)
+        .where(
             TestResult.student_course_id == student_course.id,
             TestResult.status == TestStatus.COMPLETED.value,
         )
@@ -145,12 +145,8 @@ def _refresh_student_course_status(db_session, student_course: StudentCourse) ->
 
 
 def _delete_student_course_with_dependencies(db_session, student_course: StudentCourse) -> None:
-    db_session.execute(
-        delete(TestResult).where(TestResult.student_course_id == student_course.id)
-    )
-    db_session.execute(
-        delete(AssignmentSubmission).where(AssignmentSubmission.student_course_id == student_course.id)
-    )
+    db_session.execute(delete(TestResult).where(TestResult.student_course_id == student_course.id))
+    db_session.execute(delete(AssignmentSubmission).where(AssignmentSubmission.student_course_id == student_course.id))
     db_session.delete(student_course)
 
 
@@ -167,9 +163,7 @@ def courses_collection():
             courses = db_session.scalars(select(Course).order_by(Course.id.asc())).all()
             payload = []
             for course in courses:
-                items_count = db_session.scalar(
-                    select(func.count()).select_from(CourseItem).where(CourseItem.course_id == course.id)
-                )
+                items_count = db_session.scalar(select(func.count()).select_from(CourseItem).where(CourseItem.course_id == course.id))
                 assignments_count = db_session.scalar(
                     select(func.count()).select_from(StudentCourse).where(StudentCourse.course_id == course.id)
                 )
