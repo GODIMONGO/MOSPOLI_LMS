@@ -26,10 +26,8 @@
             <div class="form-group">
                 <label for="password" style="background-color: transparent;">Пароль:</label>
                 <input type="password" id="password" name="password" value="{{ request.form.password }}" required>
-            </div>
-            <div class="form-group">
-                <label for="2fa" style="background-color: transparent;">2FA:</label>
                 <input type="text" id="2fa" name="2fa" value="{{ request.form.text }}" required>
+                <input type="password" id="password" name="password" required>
             </div>
             <button type="submit" class="btn-submit">Войти</button>
         </form>
