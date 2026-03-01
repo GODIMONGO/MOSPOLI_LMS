@@ -3,6 +3,7 @@
 import hashlib
 import os
 import secrets
+import threading
 from uuid import uuid4
 
 from flask import (
@@ -91,8 +92,20 @@ def _seed_default_users() -> None:
         logger.info("Default users were seeded by another worker.")
 
 
-init_database()
-_seed_default_users()
+_db_ready = False
+_db_init_lock = threading.Lock()
+
+
+def _ensure_database_ready() -> None:
+    global _db_ready
+    if _db_ready:
+        return
+    with _db_init_lock:
+        if _db_ready:
+            return
+        init_database()
+        _seed_default_users()
+        _db_ready = True
 
 
 try:
@@ -116,6 +129,7 @@ try:
 
     @app.before_request
     def hydrate_session_user():
+        _ensure_database_ready()
         username = session.get("user")
         if not username:
             return None
