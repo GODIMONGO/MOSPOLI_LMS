@@ -1,3 +1,5 @@
+# pylint: disable=not-callable
+
 import hashlib
 import os
 import secrets

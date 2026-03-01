@@ -20,7 +20,10 @@ SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, expi
 
 
 def init_database() -> None:
-    from models import AssignmentSubmission, Course, CourseItem, StudentCourse, TestResult, User  # noqa: F401
+    from models import AssignmentSubmission, Course, CourseItem, StudentCourse, TestResult, User
+
+    # Import models so SQLAlchemy registers tables before create_all.
+    _ = (AssignmentSubmission, Course, CourseItem, StudentCourse, TestResult, User)
 
     with engine.begin() as connection:
         lock_acquired = False
