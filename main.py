@@ -92,20 +92,19 @@ def _seed_default_users() -> None:
         logger.info("Default users were seeded by another worker.")
 
 
-_db_ready = False
+_db_ready_event = threading.Event()
 _db_init_lock = threading.Lock()
 
 
 def _ensure_database_ready() -> None:
-    global _db_ready
-    if _db_ready:
+    if _db_ready_event.is_set():
         return
     with _db_init_lock:
-        if _db_ready:
+        if _db_ready_event.is_set():
             return
         init_database()
         _seed_default_users()
-        _db_ready = True
+        _db_ready_event.set()
 
 
 try:
