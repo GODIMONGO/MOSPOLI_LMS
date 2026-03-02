@@ -327,7 +327,10 @@ except Exception as e:
 
 
 if __name__ == "__main__":
-    broker_init_check.send()
+    try:
+        broker_init_check.send()
+    except Exception as error:
+        logger.warning(f"Не удалось отправить broker_init_check: {error}")
 
     def _strip_bom(path):
         try:

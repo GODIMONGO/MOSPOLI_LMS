@@ -9,8 +9,137 @@
     <title>СДО - Конструктор курсов</title>
 </head>
 <body>
-    <div class="empty-box">
-        <img src="{{ url_for('static', filename='admin/CourseBuilder/icons/plus.png') }}" alt="Добавить блок", class="img-plus">
+    <div class="cb-root">
+        <aside class="cb-global-nav" aria-label="Главная навигация">
+            <div class="cb-global-top">
+                <img class="cb-global-logo" src="https://e.mospolytech.ru/assets/logo-4d9aa449.png" alt="Московский политех">
+                <button type="button" class="cb-dot-btn" aria-label="Открыть меню">⋮</button>
+            </div>
+            <div class="cb-global-user">
+                <div class="cb-global-avatar">БС</div>
+                <p class="cb-global-name">Баранова София Алексеевна</p>
+            </div>
+            <div class="cb-global-search">
+                <img src="{{ url_for('static', filename='courses/icons/magnifying-glass.svg') }}" alt="" aria-hidden="true">
+                <span>Поиск</span>
+                <kbd>CTRL</kbd>
+                <kbd>K</kbd>
+            </div>
+            <nav class="cb-global-links">
+                <a href="#" class="cb-global-link">
+                    <img src="{{ url_for('static', filename='my_curse/icons/curse-icon.svg') }}" alt="">
+                    <span>Главная</span>
+                </a>
+                <a href="#" class="cb-global-link">
+                    <img src="{{ url_for('static', filename='admin/CourseBuilder/icons/assessments.svg') }}" alt="">
+                    <span>Настройки</span>
+                </a>
+                <a href="#" class="cb-global-link">
+                    <img src="{{ url_for('static', filename='admin/CourseBuilder/icons/participants.svg') }}" alt="">
+                    <span>Все разделы</span>
+                </a>
+                <a href="#" class="cb-global-link is-active">
+                    <img src="{{ url_for('static', filename='my_curse/icons/curse-icon.svg') }}" alt="">
+                    <span>Мои курсы</span>
+                </a>
+            </nav>
+            <div class="cb-global-theme">
+                <span>Темная тема</span>
+                <button type="button" aria-label="Переключить тему"></button>
+            </div>
+        </aside>
+
+        <main class="cb-page">
+            <a href="#" class="cb-back-link">Все разделы</a>
+            <section class="cb-shell">
+                <aside class="cb-sidebar" aria-label="Навигация курса и конструктора">
+                    <section class="cb-course">
+                        <h2 class="cb-side-title">Мои курсы</h2>
+                        <p class="cb-side-label">курс</p>
+                        <div class="cb-course-pill">
+                            <img src="{{ url_for('static', filename='my_curse/icons/curse-icon.svg') }}" alt="" class="cb-course-pill-icon">
+                            <span class="cb-course-pill-text">ВПД</span>
+                            <button type="button" class="cb-course-pill-close" aria-label="Скрыть курс">
+                                <img src="{{ url_for('static', filename='my_curse/icons/cross.svg') }}" alt="">
+                            </button>
+                        </div>
+                        <nav class="cb-course-nav" aria-label="Разделы курса">
+                            <button type="button" class="cb-course-nav-item is-active">
+                                <img src="{{ url_for('static', filename='my_curse/icons/curse-icon.svg') }}" alt="">
+                                <span>Курс</span>
+                            </button>
+                            <button type="button" class="cb-course-nav-item">
+                                <img src="{{ url_for('static', filename='admin/CourseBuilder/icons/participants.svg') }}" alt="">
+                                <span>Участники</span>
+                            </button>
+                            <button type="button" class="cb-course-nav-item">
+                                <img src="{{ url_for('static', filename='admin/CourseBuilder/icons/assessments.svg') }}" alt="">
+                                <span>Оценки</span>
+                            </button>
+                        </nav>
+                    </section>
+
+                    <section class="cb-constructor">
+                        <div class="cb-constructor-head">
+                            <h2 class="cb-side-title">Конструктор</h2>
+                            <button type="button" class="cb-toggle-catalog" id="builder-toggle-catalog-btn" aria-label="Свернуть панель блоков">
+                                <img src="{{ url_for('static', filename='admin/CourseBuilder/icons/arrow.svg') }}" alt="">
+                            </button>
+                        </div>
+                        <div class="cb-actions">
+                            <button type="button" class="cb-side-action" id="builder-add-module-btn">
+                                <img src="{{ url_for('static', filename='admin/CourseBuilder/icons/plus-square.svg') }}" alt="">
+                                <span>Добавить модуль</span>
+                            </button>
+                            <button type="button" class="cb-side-action" id="builder-add-topic-btn">
+                                <img src="{{ url_for('static', filename='admin/CourseBuilder/icons/plus-square.svg') }}" alt="">
+                                <span>Добавить тему</span>
+                            </button>
+                        </div>
+                        <p class="cb-side-label">блоки</p>
+                        <div class="cb-catalog" id="builder-sidebar-list" aria-label="Список доступных блоков"></div>
+                    </section>
+                </aside>
+
+                <section class="cb-canvas" aria-label="Рабочая область конструктора">
+                    <header class="cb-canvas-head">
+                        <div class="cb-course-title-line">
+                            <img src="{{ url_for('static', filename='my_curse/icons/curse-icon.svg') }}" alt="">
+                            <input id="builder-course-title-input" class="cb-course-title-input" type="text" value="Введение в проектную деятельность 2025/2026" maxlength="80">
+                            <p class="cb-counter" id="builder-course-title-counter">0/80</p>
+                        </div>
+                        <button type="button" class="cb-canvas-icon-btn" aria-label="Режим фокусировки">‖</button>
+                    </header>
+
+                    <section class="cb-course-meta" id="builder-course-meta">
+                        <p class="cb-side-label">курс</p>
+                        <div class="cb-course-line">
+                            <img src="{{ url_for('static', filename='my_curse/icons/curse-icon.svg') }}" alt="">
+                            <input id="builder-course-input" class="cb-course-input" type="text" value="|Текст" maxlength="80">
+                            <p class="cb-counter" id="builder-course-counter">0/80</p>
+                            <button type="button" class="cb-icon-btn" id="builder-toggle-course">
+                                <img src="{{ url_for('static', filename='admin/CourseBuilder/icons/arrow.svg') }}" alt="Свернуть секцию курса">
+                            </button>
+                        </div>
+                        <div class="cb-course-strip"></div>
+                    </section>
+
+                    <section class="cb-builder-zone">
+                        <div class="cb-builder-zone-head">
+                            <p class="cb-side-label">конструктор</p>
+                            <button type="button" class="cb-inline-action" id="builder-add-module-inline">
+                                <img src="{{ url_for('static', filename='admin/CourseBuilder/icons/plus-square.svg') }}" alt="">
+                                <span>Добавить модуль</span>
+                            </button>
+                        </div>
+                        <div class="cb-modules" id="builder-modules"></div>
+                    </section>
+                </section>
+            </section>
+        </main>
     </div>
+
+    <script id="builder-blocks-json" type="application/json">{{ blocks_catalog_json | safe }}</script>
+    <script defer src="{{ url_for('static', filename='admin/CourseBuilder/CourseBuilder.js') }}"></script>
 </body>
 </html>
