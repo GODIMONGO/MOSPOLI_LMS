@@ -6,13 +6,15 @@
     <title>СДО - Вход</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='design/tokens.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='design/typography.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='login/style_login.css') }}">
-    <script src="{{ url_for('static', filename='login/ascii_animation.js') }}" defer></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='login/style_login.css', v='20260309p') }}">
+    <script src="{{ url_for('static', filename='login/ascii_animation.js', v='20260309p') }}" defer></script>
 </head>
 <body class="login-page">
     <main class="login-container">
-        <div class="ascii-background" aria-hidden="true">
-            <pre id="ascii-art" data-ascii-art data-art-url="{{ url_for('static', filename='login/ascii-art.txt') }}"></pre>
+        <div class="ascii-background" aria-hidden="true" data-art-url="{{ url_for('static', filename='login/ascii-art.txt') }}">
+            <canvas id="ascii-art" class="ascii-art-layer" data-ascii-canvas></canvas>
+            <pre class="ascii-art-layer ascii-art-fallback" data-ascii-fallback="primary"></pre>
+            <pre class="ascii-art-layer ascii-art-fallback ascii-art-fallback--blend" data-ascii-fallback="secondary"></pre>
         </div>
         <section class="branding">
             <h1>Вход в СДО</h1>

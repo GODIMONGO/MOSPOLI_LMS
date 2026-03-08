@@ -46,18 +46,45 @@ body {
     z-index: 0;
 }
 
-#ascii-art {
+.ascii-art-layer {
     position: absolute;
     inset: 0;
     margin: 0;
     padding: 0;
     font-family: var(--ds-font-family-mono);
-    font-size: 12px;
+    font-size: 11px;
     line-height: 1;
-    letter-spacing: -0.025em;
-    white-space: pre;
+    letter-spacing: -0.04em;
     color: rgba(17, 24, 39, 0.11);
     user-select: none;
+    -webkit-font-smoothing: none;
+    -moz-osx-font-smoothing: auto;
+    text-rendering: geometricPrecision;
+}
+
+#ascii-art {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.ascii-art-fallback {
+    display: none;
+    white-space: pre;
+    opacity: 1;
+    transition: opacity 40ms linear;
+}
+
+.ascii-background.is-fallback #ascii-art {
+    display: none;
+}
+
+.ascii-background.is-fallback .ascii-art-fallback {
+    display: block;
+}
+
+.ascii-art-fallback--blend {
+    opacity: 0;
 }
 
 .branding {
