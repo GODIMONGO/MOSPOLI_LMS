@@ -9,4 +9,5 @@ SQLAlchemy==2.0.19
 loguru==0.7.0
 dramatiq==1.17.1
 redis==5.0.8
+pdfplumber
 gunicorn

@@ -1,0 +1,153 @@
+/* A13 mobile overrides for courses list screen */
+
+@media (max-width: 720px) {
+    .courses-hero {
+        min-height: 18rem;
+        padding: 2.8rem 1rem 5.8rem;
+    }
+
+    .search-form {
+        border-radius: 1.4rem;
+        padding: 0 1rem 0 4.3rem;
+    }
+
+    .search-icon {
+        left: 1.4rem;
+        width: 2rem;
+        height: 2rem;
+    }
+
+    .search-input {
+        min-height: 5.2rem;
+        font-size: 1.7rem;
+    }
+
+    .courses-shell {
+        width: calc(100% - 1.2rem);
+        margin: -2.8rem auto 1.8rem;
+    }
+
+    .courses-card {
+        border-radius: 1.6rem;
+    }
+
+    .header {
+        align-items: flex-start;
+        flex-direction: column-reverse;
+        gap: 0.8rem;
+        padding: 1.4rem 1.2rem;
+    }
+
+    h1 {
+        font-size: 2.2rem;
+        line-height: 1.2;
+    }
+
+    .all {
+        font-size: 1.5rem;
+    }
+
+    .course-row {
+        grid-template-columns: auto minmax(0, 1fr);
+        row-gap: 0.9rem;
+        column-gap: 1rem;
+        min-height: 56px;
+        padding: 1.2rem;
+    }
+
+    .course-icon {
+        width: 3.6rem;
+        height: 3.6rem;
+        border-radius: 1rem;
+    }
+
+    .course-name {
+        font-size: 1.5rem;
+        line-height: 1.35;
+        -webkit-line-clamp: 3;
+    }
+
+    .course-right {
+        grid-column: 1 / -1;
+        width: 100%;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+
+    .course-count {
+        min-height: 3.2rem;
+        padding: 0.55rem 0.85rem;
+    }
+
+    .course-percent {
+        min-width: auto;
+    }
+
+    .courses-empty {
+        padding: 2.4rem 1.2rem;
+    }
+
+    .courses-empty__title {
+        font-size: 1.8rem;
+    }
+
+    .courses-empty__text {
+        font-size: 1.4rem;
+    }
+
+    .courses-empty__reset {
+        min-height: 40px;
+        padding: 0.8rem 1.2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .courses-hero {
+        padding: 2.2rem 0.8rem 5rem;
+    }
+
+    .search-form {
+        padding-left: 3.8rem;
+    }
+
+    .search-icon {
+        left: 1.2rem;
+        width: 1.8rem;
+        height: 1.8rem;
+    }
+
+    .search-input {
+        min-height: 4.8rem;
+        font-size: 1.6rem;
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+
+    .all {
+        font-size: 1.4rem;
+    }
+
+    .course-row {
+        padding: 1rem;
+    }
+
+    .course-right {
+        flex-wrap: wrap;
+        justify-content: flex-start;
+    }
+
+    .course-count {
+        min-height: 3rem;
+    }
+
+    .course-indicators {
+        gap: 0.6rem;
+    }
+
+    .course-indicator {
+        width: 1.8rem;
+        height: 1.8rem;
+    }
+}

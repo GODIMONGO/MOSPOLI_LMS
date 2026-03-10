@@ -4,27 +4,66 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="https://e.mospolytech.ru/icon.png" type="image/png">
-    <link rel="stylesheet" href="{{ url_for('static', filename='header.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='normalize.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='design/tokens.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='design/typography.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='layout/lms_shell.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='settings/settings.css') }}">
     <title>СДО - Настройки</title>
 </head>
-<body>
-    <header>
-        <img class="logo" src="https://e.mospolytech.ru/assets/logo-4d9aa449.png">
-        <a href="{{ url_for('dashboard') }}" class="back-button">← Назад</a>
-    </header>
-    
-    <div class="container">
-        <h1>⚙️ Настройки</h1>
-        <form method="post" class="settings-form">
-            <div class="form-group">
-                <label for="theme">Тема оформления:</label>
-                <select id="theme" name="theme" onchange="this.form.submit()">
-                    <option value="light" {% if session.get('theme') == 'light' %}selected{% endif %}>Светлая</option>
-                    <option value="dark" {% if session.get('theme') == 'dark' %}selected{% endif %}>Тёмная</option>
-                </select>
-            </div>
-        </form>
+{% set profile_name = session.get('user', 'user') %}
+{% set profile_initial = profile_name[0]|upper if profile_name else 'U' %}
+<body class="lms-layout-page settings-page">
+    <div class="lms-layout dashboard-layout">
+        <aside class="lms-sidebar" aria-label="Основная навигация">
+            <a class="lms-sidebar-brand" href="{{ url_for('dashboard') }}" aria-label="Главная">
+                <img class="lms-sidebar-logo" src="{{ url_for('static', filename='dashboard/icons/logo-4d9aa449.png') }}" alt="Логотип LMS">
+            </a>
+
+            <nav class="lms-nav" aria-label="Разделы">
+                <a class="lms-nav-link" href="{{ url_for('dashboard') }}">Dashboard</a>
+                <a class="lms-nav-link" href="{{ url_for('courses') }}">Мои курсы</a>
+                <a class="lms-nav-link" href="{{ url_for('gantt.gantt_root') }}">Календарь</a>
+                <a class="lms-nav-link" href="{{ url_for('my_curse.task_detail', course_id='1', task_id='assignment-team-roles') }}">Задания</a>
+            </nav>
+
+            <form class="lms-logout-form" method="post" action="{{ url_for('logout') }}" aria-label="Выход из аккаунта">
+                <button type="submit" class="lms-logout-btn">Logout [->]</button>
+            </form>
+        </aside>
+
+        <div class="lms-main">
+            <header class="lms-main-header top-nav">
+                <div class="lms-width-container lms-top-nav-inner">
+                    <nav class="lms-breadcrumbs breadcrumbs" aria-label="Навигационный путь">Главная / Настройки</nav>
+                    <div class="lms-user-chip user-pill" aria-label="Профиль пользователя">
+                        <span class="lms-user-avatar" aria-hidden="true">{{ profile_initial }}</span>
+                        <span class="lms-user-name">{{ profile_name }}</span>
+                    </div>
+                </div>
+            </header>
+
+            <main class="lms-page-content settings-content main-content">
+                <div class="lms-width-container view-container">
+                    <section class="lms-page-header page-header">
+                        <h1 class="lms-main-title">Настройки</h1>
+                    </section>
+
+                    <section class="settings-card lms-unified-block">
+                        <h2 class="settings-heading">Параметры интерфейса</h2>
+                        <form method="post" class="settings-form">
+                            <div class="form-group">
+                                <label for="theme">Тема оформления</label>
+                                <select id="theme" name="theme" onchange="this.form.submit()">
+                                    <option value="light" {% if session.get('theme') == 'light' %}selected{% endif %}>Светлая</option>
+                                    <option value="dark" {% if session.get('theme') == 'dark' %}selected{% endif %}>Тёмная</option>
+                                </select>
+                            </div>
+                        </form>
+                    </section>
+                </div>
+            </main>
+        </div>
     </div>
 </body>
 </html>

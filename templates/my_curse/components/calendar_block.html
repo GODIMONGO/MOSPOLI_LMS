@@ -1,0 +1,123 @@
+{# Reusable calendar block macro for my_curse page (A14 ownership). #}
+
+{% macro calendar_block(calendar=None, block_id='course-calendar') -%}
+{% set _calendar = calendar or {} %}
+{% set _state = (_calendar.get('state') or 'overview')|lower %}
+{% set state = _state if _state in ['overview', 'entry'] else 'overview' %}
+{% set title = _calendar.get('title', 'Календарь') %}
+{% set month_label = _calendar.get('month_label', 'Октябрь 2025') %}
+{% set timezone = _calendar.get('timezone', 'UTC+03:00') %}
+{% set week_days = _calendar.get('week_days') or ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'] %}
+{% set weeks = _calendar.get('weeks') or [] %}
+{% set entries = _calendar.get('entries') or [] %}
+{% set selected_date_label = _calendar.get('selected_date_label', 'Дата не выбрана') %}
+{% set selected_date_iso = _calendar.get('selected_date_iso', '') %}
+{% set summary = _calendar.get('summary') or {} %}
+{% set total_count = summary.get('total', entries|length) %}
+{% set done_count = summary.get('done', 0) %}
+{% set overdue_count = summary.get('overdue', 0) %}
+
+<section class="calendar-block calendar-block--{{ state }}" id="{{ block_id }}" data-calendar-state="{{ state }}" aria-label="Календарный блок курса">
+    <header class="calendar-block__header">
+        <div class="calendar-block__titles">
+            <p class="calendar-block__kicker">Планирование</p>
+            <h2 class="calendar-block__title">{{ title }}</h2>
+        </div>
+        <div class="calendar-block__chips" aria-label="Сводка календаря">
+            <span class="calendar-chip calendar-chip--total">Всего: {{ total_count }}</span>
+            <span class="calendar-chip calendar-chip--done">Выполнено: {{ done_count }}</span>
+            <span class="calendar-chip calendar-chip--overdue">Просрочено: {{ overdue_count }}</span>
+        </div>
+    </header>
+
+    <div class="calendar-block__surface">
+        <section class="calendar-block__month" aria-label="Календарная сетка месяца">
+            <div class="calendar-block__month-head">
+                <h3 class="calendar-block__month-label">{{ month_label }}</h3>
+                <span class="calendar-block__timezone">{{ timezone }}</span>
+            </div>
+
+            <ol class="calendar-block__weekdays" aria-hidden="true">
+                {% for day_name in week_days %}
+                <li class="calendar-block__weekday">{{ day_name }}</li>
+                {% endfor %}
+            </ol>
+
+            <ol class="calendar-block__grid" aria-label="Сетка дней месяца">
+                {% if weeks %}
+                    {% for week in weeks %}
+                        {% set days = week.get('days', []) %}
+                        {% for day in days %}
+                        {% set day_number = day.get('day') %}
+                        {% set items_count = day.get('items_count', 0) %}
+                        {% set is_today = day.get('is_today', False) %}
+                        {% set is_outside = day.get('outside_month', False) %}
+                        {% set is_active = day.get('is_active', False) %}
+                        {% set day_date = day.get('date_iso', '') %}
+                        {% set day_classes = 'calendar-day' %}
+                        {% if is_today %}{% set day_classes = day_classes ~ ' calendar-day--today' %}{% endif %}
+                        {% if is_outside %}{% set day_classes = day_classes ~ ' calendar-day--outside' %}{% endif %}
+                        {% if is_active %}{% set day_classes = day_classes ~ ' calendar-day--active' %}{% endif %}
+                        {% if items_count > 0 %}{% set day_classes = day_classes ~ ' calendar-day--with-items' %}{% endif %}
+                        <li class="{{ day_classes }}">
+                            {% if day.get('href') %}
+                            <a
+                                class="calendar-day__control"
+                                href="{{ day.get('href') }}"
+                                aria-current="{{ 'date' if is_active else 'false' }}"
+                                title="{{ day.get('label', 'Открыть день') }}">
+                                <span class="calendar-day__number">{{ day_number if day_number is not none else '' }}</span>
+                                <span class="calendar-day__count">{{ items_count if items_count > 0 else '' }}</span>
+                            </a>
+                            {% else %}
+                            <span
+                                class="calendar-day__control"
+                                data-date="{{ day_date }}"
+                                aria-current="{{ 'date' if is_active else 'false' }}">
+                                <span class="calendar-day__number">{{ day_number if day_number is not none else '' }}</span>
+                                <span class="calendar-day__count">{{ items_count if items_count > 0 else '' }}</span>
+                            </span>
+                            {% endif %}
+                        </li>
+                        {% endfor %}
+                    {% endfor %}
+                {% else %}
+                <li class="calendar-block__empty">Нет данных для отображения календаря.</li>
+                {% endif %}
+            </ol>
+        </section>
+
+        <aside class="calendar-block__agenda" aria-label="События выбранной даты">
+            <div class="calendar-block__agenda-head">
+                <h3 class="calendar-block__agenda-title">
+                    {% if state == 'entry' %}События на дату{% else %}Ближайшие события{% endif %}
+                </h3>
+                <time class="calendar-block__agenda-date" datetime="{{ selected_date_iso }}">{{ selected_date_label }}</time>
+            </div>
+
+            {% if entries %}
+            <ul class="calendar-entry-list">
+                {% for entry in entries %}
+                {% set status = (entry.get('status') or 'planned')|lower %}
+                <li class="calendar-entry calendar-entry--{{ status }}">
+                    <div class="calendar-entry__time">{{ entry.get('time', '--:--') }}</div>
+                    <div class="calendar-entry__content">
+                        {% if entry.get('href') %}
+                        <a href="{{ entry.get('href') }}" class="calendar-entry__title">{{ entry.get('title', 'Событие') }}</a>
+                        {% else %}
+                        <p class="calendar-entry__title">{{ entry.get('title', 'Событие') }}</p>
+                        {% endif %}
+                        {% if entry.get('meta') %}
+                        <p class="calendar-entry__meta">{{ entry.get('meta') }}</p>
+                        {% endif %}
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="calendar-block__agenda-empty">На выбранную дату событий нет.</p>
+            {% endif %}
+        </aside>
+    </div>
+</section>
+{%- endmacro %}

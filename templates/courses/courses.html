@@ -1,59 +1,247 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Мои курсы</title>
-	<link rel="stylesheet" href="{{ url_for('static', filename='courses/courses.css') }}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мои курсы</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='normalize.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='design/tokens.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='design/typography.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='layout/lms_shell.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='courses/courses.css') }}">
 </head>
-<body>
-    <form class="search-form" method="get" action="">
-        <input type="text" class="search-input" name="search" placeholder="Поиск курсов...">
-        <button type="submit" class="search-btn">🔍</button>
-    </form>
-
-    <div class="container">
-        <div class="header">
-            <a href="https://e.mospolytech.ru/#/all" class="back-button">
-                <img src="{{ url_for('static', filename='courses/icons/arrow.svg') }}" alt="Back" width="6" height="12">
-                <span class="all">Все разделы</span>
+{% set profile_name = session.get('user', 'user') %}
+{% set profile_initial = profile_name[0]|upper if profile_name else 'U' %}
+<body class="lms-layout-page courses-page">
+    <div class="lms-layout dashboard-layout">
+        <aside class="lms-sidebar" aria-label="Основная навигация">
+            <a class="lms-sidebar-brand" href="{{ url_for('dashboard') }}" aria-label="Главная">
+                <img class="lms-sidebar-logo" src="{{ url_for('static', filename='dashboard/icons/logo-4d9aa449.png') }}" alt="Логотип LMS">
             </a>
-            <h2>Мои курсы</h2>
-        </div>
-        <ul class="courses-list">
-            {% for course in courses %}
-            <li>
-                <span class="square-academic-cap">
-                    <img src="{{ url_for('static', filename='courses/icons/square-academic-cap.svg') }}" alt="Academic Cap Icon" width="32" height="17">
-                </span>
-                <span class="course_name">{{ course.name }}</span>
-                <span class="course-count-number-task">{{ course.count_number_task }}</span>
-                {# ds #}
-                {% set pct = course.stat if course.stat is defined else 0 %}
-                {% if pct is string %}
-                    {% set pct = pct|int %}
-                {% endif %}
-                {% if pct < 0 %}
-                    {% set pct = 0 %}
-                {% elif pct > 100 %}
-                    {% set pct = 100 %}
-                {% endif %}
 
-                {# SVG circle math: circumference for r=18 -> 2*pi*18 ~= 113.097
-                   stroke-dasharray set to 113 and stroke-dashoffset = 113 * (100 - pct)/100
-                #}
-                {% set circ = 326.7 %}
-                {% set dashoffset = ((circ * (100 - pct)) / 100) | round(2) %}
-                <div class="ring-wrap">
-                    <svg class="ring" viewBox="0 0 120 120" width="50" height="50" aria-hidden="true">
-                        <circle cx="60" cy="60" r="30" class="ring-bg"/>
-                        <circle cx="60" cy="60" r="30" class="ring-fg" style="stroke-dasharray: {{ circ }}; stroke-dashoffset: {{ dashoffset }};"/>
-                    </svg>
+            <nav class="lms-nav" aria-label="Разделы">
+                <a class="lms-nav-link" href="{{ url_for('dashboard') }}">Dashboard</a>
+                <a class="lms-nav-link is-active" href="{{ url_for('courses') }}" aria-current="page">Мои курсы</a>
+                <a class="lms-nav-link" href="{{ url_for('gantt.gantt_root') }}">Календарь</a>
+                <a class="lms-nav-link" href="{{ url_for('my_curse.task_detail', course_id='1', task_id='assignment-team-roles') }}">Задания</a>
+            </nav>
+
+            <form class="lms-logout-form" method="post" action="{{ url_for('logout') }}" aria-label="Выход из аккаунта">
+                <button type="submit" class="lms-logout-btn">Logout [->]</button>
+            </form>
+        </aside>
+
+        <div class="lms-main">
+            <header class="lms-main-header top-nav">
+                <div class="lms-width-container lms-top-nav-inner">
+                    <nav class="lms-breadcrumbs breadcrumbs" aria-label="Навигационный путь">Главная / Мои курсы</nav>
+                    <div class="lms-user-chip user-pill" aria-label="Профиль пользователя">
+                        <span class="lms-user-avatar" aria-hidden="true">{{ profile_initial }}</span>
+                        <span class="lms-user-name">{{ profile_name }}</span>
+                    </div>
                 </div>
+            </header>
 
-            </li>
-            {% endfor %}
-        </ul>
+            <main class="lms-page-content courses-content main-content">
+                <div class="lms-width-container view-container">
+                    <section class="lms-page-header page-header">
+                        <h1 class="lms-main-title">Мои курсы</h1>
+                    </section>
+
+                    <header class="courses-hero lms-unified-block" aria-label="Поиск курсов">
+                        <form class="search-form" id="search-form" role="search" novalidate>
+                            <label class="sr-only" for="courses-search">Поиск курсов</label>
+                            <img class="search-icon" src="{{ url_for('static', filename='courses/icons/magnifying-glass.svg') }}" alt="" width="24" height="24">
+                            <input
+                                id="courses-search"
+                                class="search-input"
+                                type="search"
+                                name="search"
+                                placeholder="Поиск курсов"
+                                autocomplete="off"
+                                spellcheck="false"
+                            >
+                            <kbd class="search-shortcut">CTRL K</kbd>
+                        </form>
+                    </header>
+
+                    <section class="courses-shell">
+                        <section class="courses-card lms-unified-block" aria-labelledby="courses-title">
+                            <div class="header">
+                                <a href="https://e.mospolytech.ru/#/all" class="back-button">
+                                    <img src="{{ url_for('static', filename='courses/icons/arrow.svg') }}" alt="" width="8" height="14">
+                                    <span class="all">Все разделы</span>
+                                </a>
+                                <h2 id="courses-title">Список курсов</h2>
+                            </div>
+
+                            <ul class="courses-list" id="courses-list">
+                                {% for course in courses %}
+                                {% set pct = course.stat if course.stat is defined else 0 %}
+                                {% if pct is string %}
+                                    {% set pct = pct|int %}
+                                {% endif %}
+                                {% if pct < 0 %}
+                                    {% set pct = 0 %}
+                                {% elif pct > 100 %}
+                                    {% set pct = 100 %}
+                                {% endif %}
+                                {% set indicator_level = "empty" %}
+                                {% if pct >= 75 %}
+                                    {% set indicator_level = "high" %}
+                                {% elif pct >= 35 %}
+                                    {% set indicator_level = "mid" %}
+                                {% elif pct > 0 %}
+                                    {% set indicator_level = "low" %}
+                                {% endif %}
+                                {% set course_id = course.id if course.id is defined else loop.index %}
+
+                                <li>
+                                    <a class="course-row" href="{{ url_for('my_curse.my_curse', id=course_id) }}">
+                                    <span class="course-icon" aria-hidden="true">
+                                        <img src="{{ url_for('static', filename='courses/icons/square-academic-cap.svg') }}" alt="" width="32" height="17">
+                                    </span>
+                                    <span class="course-name" title="{{ course.name }}">{{ course.name }}</span>
+                                    <span class="course-right">
+                                        <span class="course-count">{{ course.count_number_task }} тем</span>
+                                        <span class="course-indicators">
+                                            <span class="course-indicator course-indicator--{{ indicator_level }}" aria-hidden="true"></span>
+                                            <span class="course-percent">{{ pct }}%</span>
+                                        </span>
+                                    </span>
+                                    </a>
+                                </li>
+                                {% else %}
+                                <li class="courses-empty-static">Список курсов пока пуст.</li>
+                                {% endfor %}
+                            </ul>
+
+                            <div class="courses-empty" id="courses-empty" hidden>
+                                <p class="courses-empty__title">Ничего не найдено</p>
+                                <p class="courses-empty__text">Попробуйте изменить формулировку или очистить поиск.</p>
+                                <button class="courses-empty__reset" id="courses-reset" type="button">Сбросить поиск</button>
+                            </div>
+                        </section>
+                    </section>
+                </div>
+            </main>
+        </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchForm = document.getElementById('search-form');
+            const searchInput = document.getElementById('courses-search');
+            const coursesList = document.getElementById('courses-list');
+            const emptyState = document.getElementById('courses-empty');
+            const resetButton = document.getElementById('courses-reset');
+            const rows = coursesList ? Array.from(coursesList.querySelectorAll('.course-row')) : [];
+
+            if (!searchInput || rows.length === 0) {
+                return;
+            }
+
+            function normalize(value) {
+                return (value || '').toString().toLowerCase().trim();
+            }
+
+            function setActiveRow(nextRow) {
+                rows.forEach(function (row) {
+                    row.classList.remove('is-active');
+                });
+                if (nextRow) {
+                    nextRow.classList.add('is-active');
+                }
+            }
+
+            function filterCourses() {
+                const query = normalize(searchInput.value);
+                let visibleCount = 0;
+
+                rows.forEach(function (row) {
+                    const titleNode = row.querySelector('.course-name');
+                    const courseName = titleNode ? normalize(titleNode.textContent) : '';
+                    const isMatch = !query || courseName.indexOf(query) !== -1;
+                    const rowItem = row.closest('li');
+                    if (rowItem) {
+                        rowItem.hidden = !isMatch;
+                    } else {
+                        row.hidden = !isMatch;
+                    }
+                    if (isMatch) {
+                        visibleCount += 1;
+                    }
+                });
+
+                if (emptyState) {
+                    emptyState.hidden = visibleCount !== 0;
+                }
+
+                if (visibleCount === 0) {
+                    setActiveRow(null);
+                } else if (!rows.some(function (row) {
+                    const rowItem = row.closest('li');
+                    return row.classList.contains('is-active') && !(rowItem && rowItem.hidden);
+                })) {
+                    const firstVisible = rows.find(function (row) {
+                        const rowItem = row.closest('li');
+                        return !(rowItem && rowItem.hidden);
+                    });
+                    setActiveRow(firstVisible || null);
+                }
+            }
+
+            rows.forEach(function (row) {
+                row.addEventListener('click', function () {
+                    const rowItem = row.closest('li');
+                    if (!(rowItem && rowItem.hidden)) {
+                        setActiveRow(row);
+                    }
+                });
+            });
+
+            searchInput.addEventListener('input', filterCourses);
+
+            if (searchForm) {
+                searchForm.addEventListener('submit', function (event) {
+                    event.preventDefault();
+                    filterCourses();
+                });
+            }
+
+            if (resetButton) {
+                resetButton.addEventListener('click', function () {
+                    searchInput.value = '';
+                    filterCourses();
+                    searchInput.focus();
+                });
+            }
+
+            document.addEventListener('keydown', function (event) {
+                const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+                const shortcutPressed = isMac ? event.metaKey : event.ctrlKey;
+                if (shortcutPressed && event.key.toLowerCase() === 'k') {
+                    const tagName = (event.target && event.target.tagName ? event.target.tagName.toLowerCase() : '');
+                    const inEditable =
+                        tagName === 'input' ||
+                        tagName === 'textarea' ||
+                        tagName === 'select' ||
+                        (event.target && event.target.isContentEditable);
+                    if (inEditable) {
+                        return;
+                    }
+                    event.preventDefault();
+                    searchInput.focus();
+                    searchInput.select();
+                }
+            });
+
+            const queryFromUrl = new URLSearchParams(window.location.search).get('search');
+            if (queryFromUrl) {
+                searchInput.value = queryFromUrl;
+            }
+            filterCourses();
+        });
+    </script>
 </body>
 </html>

@@ -1,0 +1,107 @@
+/* Typography system: Geist / Geist Mono */
+
+@import url("https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap");
+
+:root {
+    --ds-font-family-base: var(--font-geist);
+    --ds-font-family-mono: var(--font-mono);
+
+    --ds-font-weight-regular: 400;
+    --ds-font-weight-medium: 500;
+    --ds-font-weight-semibold: 600;
+    --ds-font-weight-bold: 700;
+
+    --ds-font-size-12: var(--text-xs);
+    --ds-font-size-14: var(--text-sm);
+    --ds-font-size-16: var(--text-base);
+    --ds-font-size-18: var(--text-lg);
+    --ds-font-size-20: var(--text-xl);
+    --ds-font-size-24: var(--text-2xl);
+    --ds-font-size-30: var(--text-3xl);
+    --ds-font-size-32: 2rem;
+    --ds-font-size-36: 2.25rem;
+
+    --ds-line-height-tight: 1.25;
+    --ds-line-height-base: 1.5;
+    --ds-line-height-relaxed: 1.65;
+
+    --ds-letter-spacing-normal: 0;
+    --ds-letter-spacing-tight: -0.03em;
+    --ds-letter-spacing-wide: 0.01em;
+
+    --ds-type-display-size: var(--ds-font-size-36);
+    --ds-type-display-weight: var(--ds-font-weight-semibold);
+    --ds-type-display-line: 1.15;
+
+    --ds-type-title-size: var(--ds-font-size-24);
+    --ds-type-title-weight: var(--ds-font-weight-semibold);
+    --ds-type-title-line: 1.25;
+
+    --ds-type-body-size: var(--ds-font-size-16);
+    --ds-type-body-weight: var(--ds-font-weight-regular);
+    --ds-type-body-line: var(--ds-line-height-base);
+
+    --ds-type-body-strong-size: var(--ds-font-size-16);
+    --ds-type-body-strong-weight: var(--ds-font-weight-medium);
+    --ds-type-body-strong-line: var(--ds-line-height-base);
+
+    --ds-type-caption-size: var(--ds-font-size-12);
+    --ds-type-caption-weight: var(--ds-font-weight-medium);
+    --ds-type-caption-line: 1.4;
+
+    --ds-type-button-size: var(--ds-font-size-14);
+    --ds-type-button-weight: var(--ds-font-weight-medium);
+    --ds-type-button-line: 1.35;
+}
+
+.ds-type-display {
+    font-family: var(--ds-font-family-base);
+    font-size: var(--ds-type-display-size);
+    font-weight: var(--ds-type-display-weight);
+    line-height: var(--ds-type-display-line);
+    letter-spacing: var(--ds-letter-spacing-tight);
+}
+
+.ds-type-title {
+    font-family: var(--ds-font-family-base);
+    font-size: var(--ds-type-title-size);
+    font-weight: var(--ds-type-title-weight);
+    line-height: var(--ds-type-title-line);
+    letter-spacing: var(--ds-letter-spacing-tight);
+}
+
+.ds-type-body {
+    font-family: var(--ds-font-family-base);
+    font-size: var(--ds-type-body-size);
+    font-weight: var(--ds-type-body-weight);
+    line-height: var(--ds-type-body-line);
+}
+
+.ds-type-body-strong {
+    font-family: var(--ds-font-family-base);
+    font-size: var(--ds-type-body-strong-size);
+    font-weight: var(--ds-type-body-strong-weight);
+    line-height: var(--ds-type-body-strong-line);
+}
+
+.ds-type-caption {
+    font-family: var(--ds-font-family-base);
+    font-size: var(--ds-type-caption-size);
+    font-weight: var(--ds-type-caption-weight);
+    line-height: var(--ds-type-caption-line);
+}
+
+.ds-type-button {
+    font-family: var(--ds-font-family-base);
+    font-size: var(--ds-type-button-size);
+    font-weight: var(--ds-type-button-weight);
+    line-height: var(--ds-type-button-line);
+}
+
+.ds-truncate-2 {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    line-clamp: 2;
+    -webkit-line-clamp: 2;
+}

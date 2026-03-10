@@ -1,0 +1,115 @@
+{# A16 reusable UI states for Flask/Jinja templates. #}
+
+{% macro render_ui_state(
+    state='empty',
+    title=None,
+    description=None,
+    action_label=None,
+    action_href=None,
+    action_id=None,
+    action_class='',
+    action_name=None,
+    action_value=None,
+    size='default',
+    extra_class='',
+    loading_label='Идет загрузка данных...'
+) -%}
+{% set supported_states = ['empty', 'loading', 'error', 'no-results', 'no-files'] %}
+{% set resolved_state = state if state in supported_states else 'empty' %}
+{% set presets = {
+    'empty': {
+        'title': 'Пока ничего нет',
+        'description': 'Содержимое появится здесь после загрузки или публикации.'
+    },
+    'loading': {
+        'title': 'Загружаем данные',
+        'description': 'Пожалуйста, подождите. Это может занять несколько секунд.'
+    },
+    'error': {
+        'title': 'Не удалось загрузить данные',
+        'description': 'Произошла ошибка. Попробуйте обновить страницу или повторить позже.'
+    },
+    'no-results': {
+        'title': 'Ничего не найдено',
+        'description': 'Измените фильтр или поисковый запрос и попробуйте снова.'
+    },
+    'no-files': {
+        'title': 'Файлы отсутствуют',
+        'description': 'Здесь пока нет прикрепленных файлов.'
+    }
+} %}
+{% set ui_title = title or presets[resolved_state]['title'] %}
+{% set ui_description = description or presets[resolved_state]['description'] %}
+{% set role = 'status' %}
+{% set live = 'polite' %}
+{% if resolved_state == 'error' %}
+    {% set role = 'alert' %}
+    {% set live = 'assertive' %}
+{% endif %}
+
+<section
+    class="ui-state ui-state--{{ resolved_state }} {% if size == 'compact' %}ui-state--compact{% elif size == 'page' %}ui-state--page{% endif %} {{ extra_class }}"
+    data-ui-state="{{ resolved_state }}"
+    role="{{ role }}"
+    aria-live="{{ live }}"
+    aria-atomic="true"
+    {% if resolved_state == 'loading' %}aria-busy="true"{% endif %}>
+
+    <div class="ui-state__media" aria-hidden="true">
+        <span class="ui-state__icon"></span>
+        {% if resolved_state == 'loading' %}
+        <span class="ui-state__spinner"></span>
+        {% endif %}
+    </div>
+
+    <h3 class="ui-state__title">{{ ui_title }}</h3>
+    <p class="ui-state__description">{{ ui_description }}</p>
+
+    {% if resolved_state == 'loading' %}
+    <span class="ui-state__sr-only">{{ loading_label }}</span>
+    <div class="ui-state__skeleton" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+    {% endif %}
+
+    {% if action_label %}
+    <div class="ui-state__actions">
+        {% if action_href %}
+        <a
+            class="ui-state__action {{ action_class }}"
+            {% if action_id %}id="{{ action_id }}"{% endif %}
+            href="{{ action_href }}">{{ action_label }}</a>
+        {% else %}
+        <button
+            type="button"
+            class="ui-state__action {{ action_class }}"
+            {% if action_id %}id="{{ action_id }}"{% endif %}
+            {% if action_name %}name="{{ action_name }}"{% endif %}
+            {% if action_value %}value="{{ action_value }}"{% endif %}>{{ action_label }}</button>
+        {% endif %}
+    </div>
+    {% endif %}
+</section>
+{%- endmacro %}
+
+{% macro empty(title=None, description=None, action_label=None, action_href=None, action_id=None, action_class='', size='default', extra_class='') -%}
+{{ render_ui_state('empty', title=title, description=description, action_label=action_label, action_href=action_href, action_id=action_id, action_class=action_class, size=size, extra_class=extra_class) }}
+{%- endmacro %}
+
+{% macro loading(title=None, description=None, size='default', extra_class='', loading_label='Идет загрузка данных...') -%}
+{{ render_ui_state('loading', title=title, description=description, size=size, extra_class=extra_class, loading_label=loading_label) }}
+{%- endmacro %}
+
+{% macro error(title=None, description=None, action_label=None, action_href=None, action_id=None, action_class='', size='default', extra_class='') -%}
+{{ render_ui_state('error', title=title, description=description, action_label=action_label, action_href=action_href, action_id=action_id, action_class=action_class, size=size, extra_class=extra_class) }}
+{%- endmacro %}
+
+{% macro no_results(title=None, description=None, action_label=None, action_href=None, action_id=None, action_class='', size='default', extra_class='') -%}
+{{ render_ui_state('no-results', title=title, description=description, action_label=action_label, action_href=action_href, action_id=action_id, action_class=action_class, size=size, extra_class=extra_class) }}
+{%- endmacro %}
+
+{% macro no_files(title=None, description=None, action_label=None, action_href=None, action_id=None, action_class='', size='default', extra_class='') -%}
+{{ render_ui_state('no-files', title=title, description=description, action_label=action_label, action_href=action_href, action_id=action_id, action_class=action_class, size=size, extra_class=extra_class) }}
+{%- endmacro %}

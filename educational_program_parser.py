@@ -89,9 +89,7 @@ def _extract_competencies(text: str) -> list[dict[str, Any]]:
         for indicator_index, indicator_match in enumerate(indicator_matches):
             indicator_start_pos = indicator_match.end()
             indicator_end_pos = (
-                indicator_matches[indicator_index + 1].start()
-                if indicator_index + 1 < len(indicator_matches)
-                else len(indicators_part)
+                indicator_matches[indicator_index + 1].start() if indicator_index + 1 < len(indicator_matches) else len(indicators_part)
             )
             indicator_description = _normalize_line(indicators_part[indicator_start_pos:indicator_end_pos])
             indicator_entries.append({"code": indicator_match.group(1), "description": indicator_description})
