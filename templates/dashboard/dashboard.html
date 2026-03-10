@@ -75,6 +75,17 @@
                             <span class="dashboard-card-title">Календарь</span>
                             <span class="dashboard-card-text">План задач и дедлайнов</span>
                         </a>
+                        {% if admin_available %}
+                        <a href="{{ url_for('admin.admin_index') }}" class="dashboard-card lms-unified-block">
+                            <span class="dashboard-card-title">Админка</span>
+                            <span class="dashboard-card-text">Панель администрирования и сервисные разделы</span>
+                        </a>
+                        {% else %}
+                        <article class="dashboard-card dashboard-card-muted lms-unified-block" aria-disabled="true">
+                            <span class="dashboard-card-title">Админка</span>
+                            <span class="dashboard-card-text">Появится после интеграции upstream-роутов</span>
+                        </article>
+                        {% endif %}
                     </section>
 
                     <section class="dashboard-updates feed-section lms-unified-block" aria-label="Последние обновления">
