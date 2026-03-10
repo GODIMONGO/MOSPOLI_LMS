@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="https://e.mospolytech.ru/icon.png" type="image/png">
+    <link rel="stylesheet" href="{{ url_for('static', filename='normalize.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='admin/admin.css') }}">
+    <title>СДО - Админка</title>
+</head>
+<body>
+    <main class="admin-page">
+        <section class="admin-hero card">
+            <h1>Панель администратора LMS</h1>
+            <p>Раздел управления. Выберите нужный инструмент.</p>
+            {% if notice %}
+            <div class="notice">{{ notice }}</div>
+            {% endif %}
+        </section>
+        <section class="card menu-grid">
+            <a class="menu-btn" href="{{ url_for('grades.admin_grades') }}">
+                <span class="menu-btn-title">Выставить оценку</span>
+                <span class="menu-btn-subtitle">Проверка, ввод и обновление баллов</span>
+            </a>
+            <a class="menu-btn" href="{{ url_for('course_builder.admin_course_builder') }}">
+                <span class="menu-btn-title">Перейти в конструктор</span>
+                <span class="menu-btn-subtitle">Черновики курсов и модулей</span>
+            </a>
+        </section>
+    </main>
+</body>
+</html>
