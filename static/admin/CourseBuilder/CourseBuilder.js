@@ -562,10 +562,13 @@ document.addEventListener("DOMContentLoaded", () => {
                     ? '<p class="cb-topic-empty">Перетащите блок сюда или нажмите на блок слева.</p>'
                     : topic.items.map((item) => {
                         const stateHtml = renderItemPreview(item, module.id, topic.id);
+                        const metaBlock = state.catalog.find((c) => c.id === item.blockId);
                         const metaIcon = item.blockId === "quiz"
                             ? "/static/admin/CourseBuilder/icons/assessments.svg"
                             : "/static/admin/CourseBuilder/icons/file.svg";
-                        const metaText = item.blockId === "quiz" ? "Вопросы и параметры" : "Файл";
+                        const metaText = item.blockId === "quiz"
+                            ? "Вопросы и параметры"
+                            : (metaBlock ? metaBlock.caption : "Блок");
                         return (
                             '<article class="cb-topic-item' + (item.blockId === "quiz" ? ' is-quiz' : '') + '">' +
                             '<div class="cb-item-row">' +
