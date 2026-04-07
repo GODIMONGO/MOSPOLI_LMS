@@ -1,0 +1,64 @@
+.modal {
+    position: fixed;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    z-index: 1000;
+}
+
+.modal[hidden] {
+    display: none;
+}
+
+.modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+}
+
+.modal-dialog {
+    position: relative;
+    width: min(420px, calc(100% - 32px));
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    background: #ffffff;
+    box-shadow: 0 18px 60px rgba(15, 23, 42, 0.22);
+    padding: 18px 18px 16px;
+}
+
+.modal-dialog h3 {
+    margin: 0;
+    font-size: 1.6rem;
+    font-family: "Montserrat-SemiBold", sans-serif;
+    color: #111827;
+}
+
+.modal-subtitle {
+    margin-top: 6px;
+    font-size: 1.2rem;
+    color: var(--text-muted);
+    word-break: break-word;
+}
+
+.modal-input {
+    margin-top: 14px;
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 1.3rem;
+    font-family: "Montserrat-Medium", sans-serif;
+}
+
+.modal-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(109, 157, 236, 0.18);
+}
+
+.modal-actions {
+    margin-top: 14px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
