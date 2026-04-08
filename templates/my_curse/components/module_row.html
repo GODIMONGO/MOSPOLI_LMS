@@ -1,0 +1,38 @@
+{# Module wrapper macro for grouped course cards (A09 ownership). #}
+{% import "my_curse/components/content_card.html" as cards %}
+
+{% macro module_row(module, module_index=0) -%}
+{% set module_id = module.get('id') or ('module-' ~ module_index) %}
+{% set module_title = module.get('title', 'Модуль') %}
+{% set cards_list = module.get('cards') or [] %}
+{% set is_collapsed = module.get('collapsed', False) %}
+
+<section
+    class="module-row {% if is_collapsed %}is-collapsed{% else %}is-expanded{% endif %}"
+    data-module-id="{{ module_id }}">
+    <header class="module-row__header">
+        <h2 class="module-row__title">{{ module_title }}</h2>
+        {% if module.get('subtitle') %}
+        <p class="module-row__subtitle">{{ module.get('subtitle') }}</p>
+        {% endif %}
+        <div class="module-row__meta">
+            {% if module.get('period') %}
+            <span class="module-row__meta-item">{{ module.get('period') }}</span>
+            {% endif %}
+            {% if module.get('progress') %}
+            <span class="module-row__meta-item">{{ module.get('progress') }}</span>
+            {% endif %}
+        </div>
+    </header>
+
+    <div class="module-row__body" id="{{ module_id }}-body" aria-hidden="{{ 'true' if is_collapsed else 'false' }}">
+        {% if cards_list|length > 0 %}
+            {% for card in cards_list %}
+            {{ cards.content_card(card, module_id=module_id, card_index=loop.index0) }}
+            {% endfor %}
+        {% else %}
+        <div class="module-row__empty">В модуле пока нет материалов.</div>
+        {% endif %}
+    </div>
+</section>
+{%- endmacro %}

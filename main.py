@@ -215,6 +215,7 @@ try:
                 lesson_name="Название занятия",
                 lesson_lecturer_name="Имя преподавателя",
                 lesson_time="с 12:00 до 13:30",
+                admin_available="admin.admin_index" in app.view_functions,
             )
         except Exception as e:
             id_error = error_id_logger(e)

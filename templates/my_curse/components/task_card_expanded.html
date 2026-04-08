@@ -1,0 +1,68 @@
+{% set _task = task if task is defined else (block if block is defined else {}) %}
+{% set panel_id = _task.get('id', 'task-card-expanded-panel') %}
+{% set toggle_id = panel_id ~ '-toggle' %}
+{% set collapsed = _task.get('collapsed', False) %}
+{% set files = _task.get('files', []) %}
+{% set meta = _task.get('meta', {}) %}
+
+<article class="curse-block task-card task-card--expanded {% if collapsed %}collapsed{% endif %}"
+    data-card-kind="{{ _task.get('type', 'task') }}"
+    data-state="{{ 'collapsed' if collapsed else 'expanded' }}">
+    <div class="block-header block-header-flex task-card-header">
+        <div class="task-card-title-wrap">
+            <span class="item-icon task-card-type-icon" aria-hidden="true"
+                style="--mask-url: url('{{ url_for('static', filename=_task.get('icon', 'my_curse/icons/todo_list.svg')) }}')"></span>
+            <h2 class="h2-block">{{ _task.get('title', 'Лабораторная работа №2') }}</h2>
+        </div>
+        <label class="custom-checkbox task-card-check">
+            <input type="checkbox" {% if _task.get('completed') %}checked{% endif %} aria-label="Отметить задание выполненным">
+            <span></span>
+        </label>
+    </div>
+
+    <div class="block-items task-card-panel" id="{{ panel_id }}" role="region" aria-labelledby="{{ toggle_id }}"
+        aria-hidden="{{ 'true' if collapsed else 'false' }}">
+        {% if _task.get('comment') %}
+        <section class="task-card-surface task-card-comment" aria-label="Комментарий педагога">
+            <p class="task-card-label">Комментарий педагога</p>
+            <p class="task-card-comment-text">{{ _task.get('comment') }}</p>
+        </section>
+        {% endif %}
+
+        {% if files %}
+        <section class="task-card-surface task-card-files" aria-label="Файлы для выполнения">
+            <p class="task-card-label">Файлы для выполнения</p>
+            <ul class="task-card-file-list">
+                {% for file in files %}
+                <li class="task-card-file-row">
+                    <span class="item-icon task-card-file-icon" aria-hidden="true"
+                        style="--mask-url: url('{{ url_for('static', filename=file.get('icon', 'my_curse/icons/todo_list.svg')) }}')"></span>
+                    <a class="item-link task-card-file-link" href="{{ file.get('href', '#') }}">{{ file.get('name', 'Файл') }}</a>
+                    <label class="custom-checkbox task-card-file-check">
+                        <input type="checkbox" {% if file.get('checked') %}checked{% endif %}
+                            aria-label="Отметить файл {{ file.get('name', 'Файл') }}">
+                        <span></span>
+                    </label>
+                </li>
+                {% endfor %}
+            </ul>
+        </section>
+        {% endif %}
+    </div>
+
+    <div class="task-card-meta">
+        <div class="task-card-meta-items">
+            <span class="task-card-meta-item">Автор: {{ meta.get('author', 'Преподаватель') }}</span>
+            <span class="task-card-meta-item">Период: {{ meta.get('period', 'Без срока') }}</span>
+        </div>
+    </div>
+
+    <button class="cross task-card-toggle" id="{{ toggle_id }}" type="button" aria-controls="{{ panel_id }}"
+        aria-expanded="{{ 'false' if collapsed else 'true' }}"
+        aria-label="{{ 'Развернуть карточку задания' if collapsed else 'Свернуть карточку задания' }}"
+        data-label-collapsed="Развернуть карточку задания"
+        data-label-expanded="Свернуть карточку задания"
+        title="{{ 'Развернуть' if collapsed else 'Свернуть' }}"
+        style="--mask-url: url('{{ url_for('static', filename=_task.get('cross_icon', 'my_curse/icons/arrow.svg')) }}')">
+    </button>
+</article>

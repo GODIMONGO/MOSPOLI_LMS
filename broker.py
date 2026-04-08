@@ -14,6 +14,7 @@ config_data = load_app_config()
 
 redis_url = os.getenv("REDIS_URL", config_data["redis_url"])
 broker_kind = str(os.getenv("DRAMATIQ_BROKER", "redis")).strip().lower()
+broker: StubBroker | RedisBroker
 
 
 def _can_resolve_redis_host(url: str) -> bool:

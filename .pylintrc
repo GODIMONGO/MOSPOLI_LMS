@@ -1,6 +1,7 @@
 [MAIN]
 # Игнорируем папки
 ignore=tests,migrations,.venv,venv
+ignored-modules=pdfplumber
 
 [MESSAGES CONTROL]
 # ОТКЛЮЧАЕМ ВЕСЬ ШУМ
