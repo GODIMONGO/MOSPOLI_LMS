@@ -55,16 +55,7 @@ class RerankerClient:
                 continue
             score = item.get("relevance_score", item.get("score", candidates[index].score))
             candidate = candidates[index]
-            reranked.append(
-                SearchResult(
-                    id=candidate.id,
-                    path=candidate.path,
-                    title=candidate.title,
-                    score=float(score),
-                    metadata=candidate.metadata,
-                    example_text=candidate.example_text,
-                )
-            )
+            reranked.append(_merge_scores(candidate, float(score)))
             used_indexes.add(index)
 
         for index, candidate in enumerate(candidates):
@@ -103,14 +94,24 @@ def _rerank_with_local_jina_v3(query: str, candidates: list[SearchResult]) -> li
             continue
         candidate = candidates[int(index)]
         score = item.get("relevance_score", candidate.score)
-        reranked.append(
-            SearchResult(
-                id=candidate.id,
-                path=candidate.path,
-                title=candidate.title,
-                score=float(score),
-                metadata=candidate.metadata,
-                example_text=candidate.example_text,
-            )
-        )
+        reranked.append(_merge_scores(candidate, float(score)))
     return reranked
+
+
+def _merge_scores(candidate: SearchResult, reranker_score: float) -> SearchResult:
+    vector_score = candidate.vector_score if candidate.vector_score is not None else candidate.score
+    combined_score = (0.35 * vector_score) + (0.65 * reranker_score)
+    metadata = dict(candidate.metadata)
+    diagnostics = dict(metadata.get("diagnostics", {})) if isinstance(metadata.get("diagnostics"), dict) else {}
+    diagnostics.update({"vector_score": round(vector_score, 6), "reranker_score": round(reranker_score, 6)})
+    metadata["diagnostics"] = diagnostics
+    return SearchResult(
+        id=candidate.id,
+        path=candidate.path,
+        title=candidate.title,
+        score=combined_score,
+        metadata=metadata,
+        example_text=candidate.example_text,
+        vector_score=vector_score,
+        reranker_score=reranker_score,
+    )

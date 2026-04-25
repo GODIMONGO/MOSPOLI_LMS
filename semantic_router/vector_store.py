@@ -97,6 +97,7 @@ class VectorStoreClient:
                     score=float(item.get("score", 0.0)),
                     metadata=metadata,
                     example_text=str(payload_data.get("example_text", "")),
+                    vector_score=float(item.get("score", 0.0)),
                 )
             )
         return results

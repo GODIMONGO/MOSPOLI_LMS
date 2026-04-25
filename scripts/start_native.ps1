@@ -74,6 +74,7 @@ $env:INFINITY_BASE_URL = "http://localhost:$InfinityPort"
 $env:INFINITY_EMBEDDING_MODEL = "jina-embeddings-v5-text-small"
 $env:INFINITY_RERANKER_MODEL = "jina-reranker-v3"
 $env:SEMANTIC_ROUTER_SCORE_THRESHOLD = "0.30"
+$env:SEMANTIC_ROUTER_AMBIGUITY_MARGIN = "0.08"
 
 if (Test-PortOpen -Port $QdrantPort) {
     Write-Host "Qdrant already responds on port $QdrantPort"

@@ -79,6 +79,20 @@ uv run python -m semantic_router.cli check
 
 Ожидаемый результат: Qdrant collection `routes` в статусе `green`, `points_count` равен количеству маршрутов в `data/semantic_routes.json`.
 
+Сценарный прогон качества поиска на реальных моделях:
+
+```powershell
+.\scripts\run_semantic_router_eval.ps1 -Reindex
+```
+
+Браузерный прогон через Chrome for Testing:
+
+```powershell
+.\scripts\run_semantic_router_browser_harness.ps1
+```
+
+По умолчанию скрипт использует `C:\Tools\ChromeForTesting\chrome-win64\chrome.exe`, логинится как `student` и `admin`, отправляет русские запросы через UI и проверяет фактические редиректы.
+
 ## 4. Структура проекта
 
 ```text

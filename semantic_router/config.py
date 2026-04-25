@@ -38,6 +38,7 @@ class SemanticRouterConfig:
     enabled: bool = True
     routes_file: str = "data/semantic_routes.json"
     score_threshold: float = 0.60
+    ambiguity_margin: float = 0.08
     top_k: int = 20
     clarify_limit: int = 5
     query_max_length: int = 512
@@ -58,6 +59,7 @@ def load_semantic_router_config(config_path: str = "config.json") -> SemanticRou
         enabled=_env_bool("SEMANTIC_ROUTER_ENABLED", bool(section.get("enabled", True))),
         routes_file=os.getenv("SEMANTIC_ROUTER_ROUTES_FILE", str(section.get("routes_file", "data/semantic_routes.json"))),
         score_threshold=_env_float("SEMANTIC_ROUTER_SCORE_THRESHOLD", float(section.get("score_threshold", 0.60))),
+        ambiguity_margin=_env_float("SEMANTIC_ROUTER_AMBIGUITY_MARGIN", float(section.get("ambiguity_margin", 0.08))),
         top_k=_env_int("SEMANTIC_ROUTER_TOP_K", int(section.get("top_k", 20))),
         clarify_limit=_env_int("SEMANTIC_ROUTER_CLARIFY_LIMIT", int(section.get("clarify_limit", 5))),
         query_max_length=_env_int("SEMANTIC_ROUTER_QUERY_MAX_LENGTH", int(section.get("query_max_length", 512))),

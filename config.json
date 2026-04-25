@@ -14,6 +14,7 @@
         "enabled": true,
         "routes_file": "data/semantic_routes.json",
         "score_threshold": 0.3,
+        "ambiguity_margin": 0.08,
         "top_k": 20,
         "clarify_limit": 5,
         "query_max_length": 512,

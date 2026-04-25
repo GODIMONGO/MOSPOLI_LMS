@@ -24,12 +24,19 @@ class SearchResult:
     score: float
     metadata: dict[str, Any] = field(default_factory=dict)
     example_text: str = ""
+    vector_score: float | None = None
+    reranker_score: float | None = None
 
     def as_public_dict(self) -> dict[str, Any]:
-        return {
+        payload = {
             "id": self.id,
             "path": self.path,
             "title": self.title,
             "score": round(self.score, 4),
             "metadata": self.metadata,
         }
+        if self.vector_score is not None:
+            payload["vector_score"] = round(self.vector_score, 4)
+        if self.reranker_score is not None:
+            payload["reranker_score"] = round(self.reranker_score, 4)
+        return payload

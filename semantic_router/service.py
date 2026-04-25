@@ -8,6 +8,14 @@ from semantic_router.models import SearchResult
 from semantic_router.reranker import RerankerClient
 from semantic_router.vector_store import VectorStoreClient
 
+_ADMIN_INTENT_MARKERS = (
+    "админ",
+    "администратор",
+    "административ",
+    "управление системой",
+    "управление пользователями",
+)
+
 
 class SemanticRouterError(RuntimeError):
     """Raised when semantic routing cannot be completed."""
@@ -54,6 +62,10 @@ class SemanticRouterService:
             raise SemanticRouterError(str(exc)) from exc
 
         candidates = _filter_by_role(candidates, user_role)
+        if _contains_restricted_admin_intent(cleaned_query, user_role):
+            return SemanticRouterDecision(
+                status="clarify", best=None, options=candidates[: self._config.clarify_limit], reranker_used=False
+            )
         if not candidates:
             return SemanticRouterDecision(status="clarify", best=None, options=[], reranker_used=False)
 
@@ -66,7 +78,7 @@ class SemanticRouterService:
 
         best = ranked[0]
         options = ranked[: self._config.clarify_limit]
-        status = "success" if best.score >= self._config.score_threshold and _is_safe_path(best.path) else "clarify"
+        status = "success" if _is_confident(best, options, self._config) and _is_safe_path(best.path) else "clarify"
         return SemanticRouterDecision(
             status=status, best=best if status == "success" else None, options=options, reranker_used=reranker_used
         )
@@ -85,3 +97,21 @@ def _filter_by_role(candidates: list[SearchResult], user_role: str | None) -> li
 
 def _is_safe_path(path: str) -> bool:
     return path.startswith("/") and not path.startswith("//") and "://" not in path
+
+
+def _is_confident(best: SearchResult, options: list[SearchResult], config: SemanticRouterConfig) -> bool:
+    if best.score < config.score_threshold:
+        return False
+    if len(options) < 2:
+        return True
+    second = options[1]
+    if best.id == second.id:
+        return True
+    return (best.score - second.score) >= config.ambiguity_margin
+
+
+def _contains_restricted_admin_intent(query: str, user_role: str | None) -> bool:
+    if user_role == "admin":
+        return False
+    lowered = query.casefold()
+    return any(marker in lowered for marker in _ADMIN_INTENT_MARKERS)

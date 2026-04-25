@@ -1,0 +1,73 @@
+{
+  "cases": [
+    {
+      "id": "student_courses_direct",
+      "role": "student",
+      "query": "покажи мои курсы на этот семестр",
+      "expected_status": "success",
+      "expected_path": "/courses"
+    },
+    {
+      "id": "student_courses_noisy",
+      "role": "student",
+      "query": "я потерял страницу где лежат предметы и лекции, открой обучение",
+      "expected_status": "success",
+      "expected_path": "/courses"
+    },
+    {
+      "id": "student_upload_homework",
+      "role": "student",
+      "query": "куда прикрепить домашку pdf для преподавателя",
+      "expected_status": "success",
+      "expected_path": "/input_file/test"
+    },
+    {
+      "id": "student_materials_download",
+      "role": "student",
+      "query": "где скачать материалы занятия и файлы преподавателя",
+      "expected_status": "success",
+      "expected_path": "/filesblock"
+    },
+    {
+      "id": "student_gantt_project_plan",
+      "role": "student",
+      "query": "покажи сроки этапов проекта в виде диаграммы",
+      "expected_status": "success",
+      "expected_path": "/gantt"
+    },
+    {
+      "id": "student_admin_forbidden",
+      "role": "student",
+      "query": "открой панель администратора",
+      "expected_status": "clarify"
+    },
+    {
+      "id": "admin_admin_direct",
+      "role": "admin",
+      "query": "нужно управление системой и пользователями",
+      "expected_status": "success",
+      "expected_path": "/admin"
+    },
+    {
+      "id": "admin_course_builder",
+      "role": "admin",
+      "query": "создать новый курс и настроить его структуру",
+      "expected_status": "success",
+      "expected_path": "/admin/course-builder"
+    },
+    {
+      "id": "admin_grades",
+      "role": "admin",
+      "query": "открой журнал успеваемости и оценки студентов",
+      "expected_status": "success",
+      "expected_path": "/admin/grades"
+    },
+    {
+      "id": "ambiguous_files",
+      "role": "student",
+      "query": "работа с файлами",
+      "expected_status": "clarify",
+      "expected_options": ["/filesblock", "/input_file/test"]
+    }
+  ]
+}
