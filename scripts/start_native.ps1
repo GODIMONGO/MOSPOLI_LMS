@@ -75,6 +75,10 @@ $env:INFINITY_EMBEDDING_MODEL = "jina-embeddings-v5-text-small"
 $env:INFINITY_RERANKER_MODEL = "jina-reranker-v3"
 $env:SEMANTIC_ROUTER_SCORE_THRESHOLD = "0.30"
 $env:SEMANTIC_ROUTER_AMBIGUITY_MARGIN = "0.08"
+$env:SEMANTIC_ROUTER_RERANK_TOP_K = "8"
+$env:SEMANTIC_ROUTER_RERANK_SKIP_MARGIN = "0.12"
+$env:SEMANTIC_ROUTER_LEXICAL_FAST_PATH_MIN_SCORE = "0.45"
+$env:SEMANTIC_ROUTER_LEXICAL_FAST_PATH_MARGIN = "0.18"
 
 if (Test-PortOpen -Port $QdrantPort) {
     Write-Host "Qdrant already responds on port $QdrantPort"

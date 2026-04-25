@@ -40,6 +40,10 @@ class SemanticRouterConfig:
     score_threshold: float = 0.60
     ambiguity_margin: float = 0.08
     top_k: int = 20
+    rerank_top_k: int = 8
+    rerank_skip_margin: float = 0.12
+    lexical_fast_path_min_score: float = 0.45
+    lexical_fast_path_margin: float = 0.18
     clarify_limit: int = 5
     query_max_length: int = 512
     qdrant_url: str = "http://localhost:6333"
@@ -61,6 +65,16 @@ def load_semantic_router_config(config_path: str = "config.json") -> SemanticRou
         score_threshold=_env_float("SEMANTIC_ROUTER_SCORE_THRESHOLD", float(section.get("score_threshold", 0.60))),
         ambiguity_margin=_env_float("SEMANTIC_ROUTER_AMBIGUITY_MARGIN", float(section.get("ambiguity_margin", 0.08))),
         top_k=_env_int("SEMANTIC_ROUTER_TOP_K", int(section.get("top_k", 20))),
+        rerank_top_k=_env_int("SEMANTIC_ROUTER_RERANK_TOP_K", int(section.get("rerank_top_k", 8))),
+        rerank_skip_margin=_env_float("SEMANTIC_ROUTER_RERANK_SKIP_MARGIN", float(section.get("rerank_skip_margin", 0.12))),
+        lexical_fast_path_min_score=_env_float(
+            "SEMANTIC_ROUTER_LEXICAL_FAST_PATH_MIN_SCORE",
+            float(section.get("lexical_fast_path_min_score", 0.45)),
+        ),
+        lexical_fast_path_margin=_env_float(
+            "SEMANTIC_ROUTER_LEXICAL_FAST_PATH_MARGIN",
+            float(section.get("lexical_fast_path_margin", 0.18)),
+        ),
         clarify_limit=_env_int("SEMANTIC_ROUTER_CLARIFY_LIMIT", int(section.get("clarify_limit", 5))),
         query_max_length=_env_int("SEMANTIC_ROUTER_QUERY_MAX_LENGTH", int(section.get("query_max_length", 512))),
         qdrant_url=os.getenv("QDRANT_URL", str(section.get("qdrant_url", "http://localhost:6333"))),

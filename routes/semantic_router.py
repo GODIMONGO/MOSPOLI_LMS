@@ -7,6 +7,7 @@ from semantic_router.config import load_semantic_router_config
 from semantic_router.service import SemanticRouterError, SemanticRouterService
 
 semantic_router_bp = Blueprint("semantic_router", __name__)
+_SEMANTIC_ROUTER_SERVICE: SemanticRouterService | None = None
 
 
 def _json_error(message: str, status_code: int):
@@ -37,8 +38,7 @@ def semantic_router_search():
         return _json_error("Поле query обязательно.", 400)
 
     try:
-        config = load_semantic_router_config()
-        decision = SemanticRouterService(config).search(query, user_role=_current_role())
+        decision = _get_semantic_router_service().search(query, user_role=_current_role())
         response = decision.as_response()
         return jsonify(response)
     except SemanticRouterError as error:
@@ -49,3 +49,10 @@ def semantic_router_search():
         error_id = str(uuid4())
         logger.exception(f"ID: {error_id} Semantic Router unexpected error: {error}")
         return jsonify({"status": "error", "message": "Не удалось обработать запрос.", "error_id": error_id}), 500
+
+
+def _get_semantic_router_service() -> SemanticRouterService:
+    global _SEMANTIC_ROUTER_SERVICE  # noqa: PLW0603
+    if _SEMANTIC_ROUTER_SERVICE is None:
+        _SEMANTIC_ROUTER_SERVICE = SemanticRouterService(load_semantic_router_config())
+    return _SEMANTIC_ROUTER_SERVICE

@@ -85,6 +85,12 @@ uv run python -m semantic_router.cli check
 .\scripts\run_semantic_router_eval.ps1 -Reindex
 ```
 
+Замер latency по тем же сценариям:
+
+```powershell
+.\scripts\benchmark_semantic_router.ps1 -Rounds 2 -Warmup 1
+```
+
 Браузерный прогон через Chrome for Testing:
 
 ```powershell
