@@ -23,6 +23,7 @@ from routes.gantt import gantt_bp
 from routes.grades import grades_bp
 from routes.input_file import input_file_bp
 from routes.my_curse import my_curse_bp
+from routes.semantic_router import semantic_router_bp
 from tasks import broker_init_check
 
 configure_logger()
@@ -42,6 +43,7 @@ app.register_blueprint(input_file_bp)
 app.register_blueprint(admin_bp)
 app.register_blueprint(course_builder_bp)
 app.register_blueprint(grades_bp)
+app.register_blueprint(semantic_router_bp)
 
 file_map = {}
 users = {"admin": "admin", "student": "123"}

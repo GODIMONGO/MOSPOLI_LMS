@@ -9,5 +9,19 @@
         "level": "INFO",
         "rotation": "30 MB",
         "retention": "14 days"
+    },
+    "semantic_router": {
+        "enabled": true,
+        "routes_file": "data/semantic_routes.json",
+        "score_threshold": 0.3,
+        "top_k": 20,
+        "clarify_limit": 5,
+        "query_max_length": 512,
+        "qdrant_url": "http://localhost:6333",
+        "qdrant_collection": "routes",
+        "infinity_base_url": "http://localhost:7997",
+        "embedding_model": "jina-embeddings-v5-text-small",
+        "reranker_model": "jina-reranker-v3",
+        "request_timeout": 20
     }
 }

@@ -1,0 +1,130 @@
+{
+  "routes": [
+    {
+      "id": "dashboard",
+      "path": "/dashboard",
+      "title": "Панель управления",
+      "example_queries": [
+        "Открой главную страницу",
+        "Перейти на панель управления",
+        "Где мой дашборд?"
+      ],
+      "metadata": {
+        "section": "navigation",
+        "role": "all"
+      }
+    },
+    {
+      "id": "courses",
+      "path": "/courses",
+      "title": "Курсы",
+      "example_queries": [
+        "Покажи мои курсы",
+        "Где список курсов?",
+        "Открыть курс"
+      ],
+      "metadata": {
+        "section": "learning",
+        "role": "all"
+      }
+    },
+    {
+      "id": "settings",
+      "path": "/settings",
+      "title": "Настройки",
+      "example_queries": [
+        "Открыть настройки",
+        "Где поменять тему?",
+        "Настроить профиль"
+      ],
+      "metadata": {
+        "section": "account",
+        "role": "all"
+      }
+    },
+    {
+      "id": "filesblock",
+      "path": "/filesblock",
+      "title": "Файлы занятия",
+      "example_queries": [
+        "Где файлы занятия?",
+        "Покажи материалы",
+        "Скачать файл преподавателя"
+      ],
+      "metadata": {
+        "section": "materials",
+        "role": "all"
+      }
+    },
+    {
+      "id": "input_file_test",
+      "path": "/input_file/test",
+      "title": "Загрузка файлов",
+      "example_queries": [
+        "Загрузить файл",
+        "Куда отправить работу?",
+        "Прикрепить документ"
+      ],
+      "metadata": {
+        "section": "uploads",
+        "role": "all"
+      }
+    },
+    {
+      "id": "gantt",
+      "path": "/gantt",
+      "title": "Диаграмма Ганта",
+      "example_queries": [
+        "Открыть диаграмму Ганта",
+        "План задач",
+        "Посмотреть сроки проекта"
+      ],
+      "metadata": {
+        "section": "planning",
+        "role": "all"
+      }
+    },
+    {
+      "id": "admin",
+      "path": "/admin",
+      "title": "Админка",
+      "example_queries": [
+        "Открыть админку",
+        "Панель администратора",
+        "Управление системой"
+      ],
+      "metadata": {
+        "section": "admin",
+        "role": "admin"
+      }
+    },
+    {
+      "id": "course_builder",
+      "path": "/admin/course-builder",
+      "title": "Конструктор курса",
+      "example_queries": [
+        "Создать курс",
+        "Открыть конструктор курса",
+        "Редактировать структуру курса"
+      ],
+      "metadata": {
+        "section": "admin",
+        "role": "admin"
+      }
+    },
+    {
+      "id": "grades",
+      "path": "/admin/grades",
+      "title": "Оценки",
+      "example_queries": [
+        "Открыть оценки",
+        "Журнал оценок",
+        "Проверить успеваемость"
+      ],
+      "metadata": {
+        "section": "admin",
+        "role": "admin"
+      }
+    }
+  ]
+}

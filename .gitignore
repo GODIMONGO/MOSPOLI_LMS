@@ -119,3 +119,5 @@ Thumbs.db
 uploads/
 static/uploads/
 logs/
+.runtime/
+.codex_tmp/
