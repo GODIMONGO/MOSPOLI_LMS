@@ -22,18 +22,34 @@
 
 ## 3. Быстрый старт
 
-### 3.1 Локально
+### 3.1 Без Docker: один PowerShell-скрипт
 
-```bash
-py -3 -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
-py -3 main.py
+```powershell
+.\scripts\start_native.ps1
 ```
 
-Приложение поднимается на `http://127.0.0.1:5000`.
+Скрипт сам:
 
-### 3.2 Через Docker Compose
+- создаёт `.venv` через `uv`;
+- ставит `requirements.txt` и `requirements-semantic.txt`;
+- скачивает portable Qdrant для Windows;
+- запускает Qdrant на `localhost:6333`;
+- запускает Infinity на `localhost:7997`;
+- скачивает и поднимает модели:
+  - `jinaai/jina-embeddings-v5-text-small`;
+  - `jinaai/jina-reranker-v3`;
+- индексирует `data/semantic_routes.json` в Qdrant;
+- запускает сайт на `http://127.0.0.1:5000`.
+
+Остановка всего native-контура:
+
+```powershell
+.\scripts\stop_native.ps1
+```
+
+Первый запуск может быть долгим: модели скачиваются из Hugging Face и кешируются локально.
+
+### 3.2 Через Docker Compose: один compose
 
 ```bash
 docker compose up --build
@@ -45,6 +61,43 @@ docker compose up --build
 - `redis`: брокер очереди
 - `postgres`: подготовлен, но в runtime почти не задействован
 - `file_storage`: readonly nginx-обёртка над `uploads` с basic auth
+- `qdrant`: vector store для Semantic Router
+- `infinity`: embedding/rerank server с Jina-моделями
+- `semantic_indexer`: one-shot индексация маршрутов после готовности Qdrant/Infinity
+
+Сайт будет доступен на `http://127.0.0.1:5000`.
+
+### 3.3 Проверка Semantic Router
+
+После запуска войдите как `student / 123` или `admin / admin`.
+
+Пример API-проверки:
+
+```powershell
+uv run python -m semantic_router.cli check
+```
+
+Ожидаемый результат: Qdrant collection `routes` в статусе `green`, `points_count` равен количеству маршрутов в `data/semantic_routes.json`.
+
+Сценарный прогон качества поиска на реальных моделях:
+
+```powershell
+.\scripts\run_semantic_router_eval.ps1 -Reindex
+```
+
+Замер latency по тем же сценариям:
+
+```powershell
+.\scripts\benchmark_semantic_router.ps1 -Rounds 2 -Warmup 1
+```
+
+Браузерный прогон через Chrome for Testing:
+
+```powershell
+.\scripts\run_semantic_router_browser_harness.ps1
+```
+
+По умолчанию скрипт использует `C:\Tools\ChromeForTesting\chrome-win64\chrome.exe`, логинится как `student` и `admin`, отправляет русские запросы через UI и проверяет фактические редиректы.
 
 ## 4. Структура проекта
 
@@ -73,6 +126,11 @@ MOSPOLI_LMS/
 +-- Procfile
 +-- pyproject.toml
 +-- requirements.txt
++-- requirements-semantic.txt
++-- scripts/
+|   +-- start_native.ps1
+|   +-- stop_native.ps1
+|   +-- wait_for_semantic_services.py
 +-- AGENTS.md
 ```
 

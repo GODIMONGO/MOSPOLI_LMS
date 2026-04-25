@@ -32,6 +32,51 @@ services:
       timeout: 3s
       retries: 5
 
+  qdrant:
+    image: qdrant/qdrant:v1.17.1
+    container_name: mospoli-qdrant
+    restart: unless-stopped
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+
+  infinity:
+    image: michaelf34/infinity:latest-cpu
+    container_name: mospoli-infinity
+    restart: unless-stopped
+    command:
+      - v2
+      - --model-id
+      - jinaai/jina-embeddings-v5-text-small
+      - --served-model-name
+      - jina-embeddings-v5-text-small
+      - --model-id
+      - jinaai/jina-reranker-v3
+      - --served-model-name
+      - jina-reranker-v3
+      - --engine
+      - torch
+      - --device
+      - cpu
+      - --host
+      - 0.0.0.0
+      - --port
+      - "7997"
+      - --no-model-warmup
+      - --no-bettertransformer
+      - --log-level
+      - info
+    environment:
+      HF_HUB_DISABLE_SYMLINKS_WARNING: "1"
+      HF_HOME: /app/.cache/huggingface
+      PYTHONIOENCODING: utf-8
+    ports:
+      - "7997:7997"
+    volumes:
+      - hf_cache:/app/.cache/huggingface
+
   app:
     build:
       context: .
@@ -43,9 +88,22 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      qdrant:
+        condition: service_started
+      infinity:
+        condition: service_started
+      semantic_indexer:
+        condition: service_completed_successfully
     environment:
       REDIS_URL: redis://redis:6379/0
       DATABASE_URL: postgresql+psycopg2://mospoli_user:mospoli_password@postgres:5432/mospoli_db
+      QDRANT_URL: http://qdrant:6333
+      QDRANT_COLLECTION: routes
+      INFINITY_BASE_URL: http://infinity:7997
+      INFINITY_EMBEDDING_MODEL: jina-embeddings-v5-text-small
+      INFINITY_RERANKER_MODEL: jina-reranker-v3
+      SEMANTIC_ROUTER_SCORE_THRESHOLD: "0.30"
+      HF_HOME: /app/.cache/huggingface
       PORT: 5000
       WEB_CONCURRENCY: 2
       SECRET_KEY: change_this_secret_key
@@ -57,6 +115,32 @@ services:
     volumes:
       - uploads_data:/app/uploads
       - logs_data:/shared-logs
+      - hf_cache:/app/.cache/huggingface
+
+  semantic_indexer:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.app
+    container_name: mospoli-semantic-indexer
+    restart: "no"
+    depends_on:
+      qdrant:
+        condition: service_started
+      infinity:
+        condition: service_started
+    environment:
+      QDRANT_URL: http://qdrant:6333
+      QDRANT_COLLECTION: routes
+      INFINITY_BASE_URL: http://infinity:7997
+      INFINITY_EMBEDDING_MODEL: jina-embeddings-v5-text-small
+      INFINITY_RERANKER_MODEL: jina-reranker-v3
+      SEMANTIC_ROUTER_SCORE_THRESHOLD: "0.30"
+      HF_HOME: /app/.cache/huggingface
+    command: >
+      sh -c "python scripts/wait_for_semantic_services.py --timeout 1800
+      && python -m semantic_router.cli index"
+    volumes:
+      - hf_cache:/app/.cache/huggingface
 
   dramatiq_worker:
     build:
@@ -100,3 +184,5 @@ volumes:
   postgres_data:
   uploads_data:
   logs_data:
+  qdrant_data:
+  hf_cache:
