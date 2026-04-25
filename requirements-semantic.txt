@@ -1,9 +1,10 @@
 # Semantic Router native/runtime dependencies.
 # click<8.2 avoids a Typer/Click CLI flag regression in infinity-emb on Windows.
+# Keep this file for native Windows startup. Docker app/indexer images do not
+# install it because Infinity runs as a separate service there.
 click<8.2
 infinity-emb[server,torch]==0.0.77
 peft>=0.15.2
 requests>=2.33.1
 sentence-transformers>=5.1.2
 transformers>=4.57.6
-

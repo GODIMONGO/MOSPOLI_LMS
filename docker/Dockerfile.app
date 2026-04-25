@@ -5,10 +5,9 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-COPY requirements.txt requirements-semantic.txt ./
+COPY requirements.txt ./
 RUN python -m pip install --no-cache-dir --upgrade pip==26.0.1 \
-    && pip install --no-cache-dir -r requirements.txt \
-    && pip install --no-cache-dir -r requirements-semantic.txt
+    && pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
