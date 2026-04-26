@@ -9,5 +9,24 @@
         "level": "INFO",
         "rotation": "30 MB",
         "retention": "14 days"
+    },
+    "semantic_router": {
+        "enabled": true,
+        "routes_file": "data/semantic_routes.json",
+        "score_threshold": 0.3,
+        "ambiguity_margin": 0.08,
+        "top_k": 8,
+        "rerank_top_k": 0,
+        "rerank_skip_margin": 0.12,
+        "lexical_fast_path_min_score": 0.45,
+        "lexical_fast_path_margin": 0.18,
+        "clarify_limit": 5,
+        "query_max_length": 512,
+        "qdrant_url": "http://localhost:6333",
+        "qdrant_collection": "routes",
+        "infinity_base_url": "http://localhost:7997",
+        "embedding_model": "mospoli-hash-embeddings-v1",
+        "reranker_model": "",
+        "request_timeout": 20
     }
 }

@@ -3,6 +3,7 @@ import socket
 from urllib.parse import urlparse
 
 import dramatiq
+from dramatiq.broker import Broker
 from dramatiq.brokers.redis import RedisBroker
 from dramatiq.brokers.stub import StubBroker
 from loguru import logger
@@ -30,7 +31,7 @@ def _can_resolve_redis_host(url: str) -> bool:
 
 
 if broker_kind in {"stub", "memory", "inmemory"}:
-    broker = StubBroker()
+    broker: Broker = StubBroker()
     logger.warning("Dramatiq broker backend: StubBroker (DRAMATIQ_BROKER={})", broker_kind)
 elif _can_resolve_redis_host(redis_url):
     broker = RedisBroker(url=redis_url)
