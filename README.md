@@ -35,9 +35,9 @@
 - скачивает portable Qdrant для Windows;
 - запускает Qdrant на `localhost:6333`;
 - запускает Infinity на `localhost:7997`;
-- скачивает и поднимает модели:
-  - `jinaai/jina-embeddings-v5-text-small`;
-  - `jinaai/jina-reranker-v3`;
+- скачивает и поднимает embedding-модель:
+  - `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`;
+- rerank в native-runtime по умолчанию отключён (`SEMANTIC_ROUTER_RERANK_TOP_K=0`) для совместимого запуска на Windows/CPU;
 - индексирует `data/semantic_routes.json` в Qdrant;
 - запускает сайт на `http://127.0.0.1:5000`.
 
@@ -62,7 +62,7 @@ docker compose up --build
 - `postgres`: подготовлен, но в runtime почти не задействован
 - `file_storage`: readonly nginx-обёртка над `uploads` с basic auth
 - `qdrant`: vector store для Semantic Router
-- `infinity`: embedding/rerank server с Jina-моделями
+- `infinity`: embedding server для Semantic Router
 - `semantic_indexer`: one-shot индексация маршрутов после готовности Qdrant/Infinity
 
 Сайт будет доступен на `http://127.0.0.1:5000`.

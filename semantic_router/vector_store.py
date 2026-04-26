@@ -23,15 +23,31 @@ class VectorStoreClient:
             "points_count": result.get("points_count"),
             "vectors_count": result.get("vectors_count"),
             "status": result.get("status"),
+            "vector_size": _extract_vector_size(result),
         }
 
     def ensure_collection(self, vector_size: int) -> None:
         try:
-            self.check()
-            return
+            collection_status = self.check()
         except HttpServiceError:
-            pass
+            self._create_collection(vector_size)
+            return
 
+        existing_vector_size = collection_status.get("vector_size")
+        if isinstance(existing_vector_size, int) and existing_vector_size == vector_size:
+            return
+        if existing_vector_size is None:
+            return
+
+        request_json(
+            "DELETE",
+            f"{self._base_url}/collections/{self._collection}",
+            timeout=self._config.request_timeout,
+        )
+
+        self._create_collection(vector_size)
+
+    def _create_collection(self, vector_size: int) -> None:
         payload = {"vectors": {"size": vector_size, "distance": "Cosine"}}
         request_json("PUT", f"{self._base_url}/collections/{self._collection}", payload=payload, timeout=self._config.request_timeout)
 
@@ -101,3 +117,18 @@ class VectorStoreClient:
                 )
             )
         return results
+
+
+def _extract_vector_size(collection_result: dict[str, Any]) -> int | None:
+    config = collection_result.get("config")
+    if not isinstance(config, dict):
+        return None
+    params = config.get("params")
+    if not isinstance(params, dict):
+        return None
+    vectors = params.get("vectors")
+    if isinstance(vectors, dict):
+        size = vectors.get("size")
+        if isinstance(size, int):
+            return size
+    return None

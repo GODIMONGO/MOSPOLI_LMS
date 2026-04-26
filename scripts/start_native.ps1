@@ -40,7 +40,20 @@ function Start-LoggedProcess {
     param([string]$Name, [string]$FilePath, [string[]]$Arguments, [string]$WorkingDirectory = $Root)
     $out = Join-Path $Logs "$Name.out.log"
     $err = Join-Path $Logs "$Name.err.log"
-    $process = Start-Process -FilePath $FilePath -ArgumentList $Arguments -WorkingDirectory $WorkingDirectory -WindowStyle Hidden -RedirectStandardOutput $out -RedirectStandardError $err -PassThru
+    $params = @{
+    FilePath = $FilePath
+    WorkingDirectory = $WorkingDirectory
+    WindowStyle = "Hidden"
+    RedirectStandardOutput = $out
+    RedirectStandardError = $err
+    PassThru = $true
+}
+
+if ($Arguments -and $Arguments.Count -gt 0) {
+    $params.ArgumentList = $Arguments
+}
+
+$process = Start-Process @params
     Set-Content -Path (Join-Path $Pids "$Name.pid") -Value $process.Id
     Write-Host "Started $Name (pid $($process.Id))"
 }
@@ -71,11 +84,11 @@ $env:HF_HUB_DISABLE_SYMLINKS_WARNING = "1"
 $env:QDRANT_URL = "http://localhost:$QdrantPort"
 $env:QDRANT_COLLECTION = "routes"
 $env:INFINITY_BASE_URL = "http://localhost:$InfinityPort"
-$env:INFINITY_EMBEDDING_MODEL = "jina-embeddings-v5-text-small"
+$env:INFINITY_EMBEDDING_MODEL = "paraphrase-multilingual-MiniLM-L12-v2"
 $env:INFINITY_RERANKER_MODEL = "jina-reranker-v3"
 $env:SEMANTIC_ROUTER_SCORE_THRESHOLD = "0.30"
 $env:SEMANTIC_ROUTER_AMBIGUITY_MARGIN = "0.08"
-$env:SEMANTIC_ROUTER_RERANK_TOP_K = "8"
+$env:SEMANTIC_ROUTER_RERANK_TOP_K = "0"
 $env:SEMANTIC_ROUTER_RERANK_SKIP_MARGIN = "0.12"
 $env:SEMANTIC_ROUTER_LEXICAL_FAST_PATH_MIN_SCORE = "0.45"
 $env:SEMANTIC_ROUTER_LEXICAL_FAST_PATH_MARGIN = "0.18"
@@ -92,10 +105,8 @@ if (Test-PortOpen -Port $InfinityPort) {
 } else {
     Start-LoggedProcess -Name "infinity" -FilePath "uv" -Arguments @(
         "run", "infinity_emb", "v2",
-        "--model-id", "jinaai/jina-embeddings-v5-text-small",
-        "--served-model-name", "jina-embeddings-v5-text-small",
-        "--model-id", "jinaai/jina-reranker-v3",
-        "--served-model-name", "jina-reranker-v3",
+        "--model-id", "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+        "--served-model-name", "paraphrase-multilingual-MiniLM-L12-v2",
         "--engine", "torch",
         "--device", "cpu",
         "--host", "127.0.0.1",

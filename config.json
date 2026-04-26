@@ -16,7 +16,7 @@
         "score_threshold": 0.3,
         "ambiguity_margin": 0.08,
         "top_k": 20,
-        "rerank_top_k": 8,
+        "rerank_top_k": 0,
         "rerank_skip_margin": 0.12,
         "lexical_fast_path_min_score": 0.45,
         "lexical_fast_path_margin": 0.18,
@@ -25,7 +25,7 @@
         "qdrant_url": "http://localhost:6333",
         "qdrant_collection": "routes",
         "infinity_base_url": "http://localhost:7997",
-        "embedding_model": "jina-embeddings-v5-text-small",
+        "embedding_model": "paraphrase-multilingual-MiniLM-L12-v2",
         "reranker_model": "jina-reranker-v3",
         "request_timeout": 20
     }
