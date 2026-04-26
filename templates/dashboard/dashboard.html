@@ -6,6 +6,7 @@
     <link rel="icon" href="https://e.mospolytech.ru/icon.png" type="image/png">
     <link rel="stylesheet" href="{{ url_for('static', filename='header.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='dashboard/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='semantic_router/semantic_router.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='normalize.css') }}">
     <title>СДО - Панель управления</title>
 </head>
@@ -18,6 +19,17 @@
     </header>
     <div class="dashboard">
         <h2> Добро пожаловать, {{ username }}!</h2>
+        <section class="dashboard-semantic-router" data-semantic-router>
+            <form class="semantic-router-form" data-semantic-router-form>
+                <label for="dashboard-semantic-router-query">Быстрый переход</label>
+                <div class="semantic-router-row">
+                    <input id="dashboard-semantic-router-query" name="query" type="search" autocomplete="off" placeholder="Например: где загрузить файл?" data-semantic-router-input>
+                    <button type="submit">Найти</button>
+                </div>
+            </form>
+            <div class="semantic-router-status" data-semantic-router-status></div>
+            <div class="semantic-router-options" data-semantic-router-options></div>
+        </section>
     </div>
     <div class="flex-container-1">
         <a href="{{ url_for('settings') }}" class="flex-item-settings">
@@ -45,5 +57,6 @@
     <footer>
         <small>© 2025 Система дистанционного обучения</small>
     </footer>
+    <script src="{{ url_for('static', filename='semantic_router/semantic_router.js') }}"></script>
 </body>
 </html>

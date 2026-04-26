@@ -1,11 +1,11 @@
-FROM python:3.13-alpine
+FROM python:3.10-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-COPY requirements.txt .
+COPY requirements.txt ./
 RUN python -m pip install --no-cache-dir --upgrade pip==26.0.1 \
     && pip install --no-cache-dir -r requirements.txt
 
