@@ -1,5 +1,6 @@
 import argparse
 import json
+import os
 import sys
 import time
 from urllib import error, request
@@ -23,7 +24,14 @@ def _ready(qdrant_url: str, infinity_url: str) -> tuple[bool, str]:
         return False, f"Infinity is not ready: {exc}"
 
     deployed = {item.get("id") for item in models.get("data", []) if isinstance(item, dict)}
-    required = {"jina-embeddings-v5-text-small", "jina-reranker-v3"}
+    required = {
+        model
+        for model in (
+            os.getenv("INFINITY_EMBEDDING_MODEL", "mospoli-hash-embeddings-v1"),
+            os.getenv("INFINITY_RERANKER_MODEL", ""),
+        )
+        if model
+    }
     missing = sorted(required - deployed)
     if missing:
         return False, f"Infinity models are not ready: {', '.join(missing)}"

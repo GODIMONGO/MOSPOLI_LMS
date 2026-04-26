@@ -70,9 +70,9 @@ try:
     @app.route("/execution-status")
     def execution_status():
         try:
-            if "user" in session:
+            if "user" not in session:
                 return redirect(url_for("login"))
-            return
+            return {"status": "ok", "user": session["user"]}
         except Exception as e:
             id_error = error_id_logger(e)
             return render_template("error/error.html", id_error=id_error)

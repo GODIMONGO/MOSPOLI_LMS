@@ -1,0 +1,12 @@
+FROM python:3.10-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+WORKDIR /app
+
+COPY semantic_router/runtime_server.py ./semantic_router/runtime_server.py
+
+EXPOSE 7997
+
+CMD ["python", "-m", "semantic_router.runtime_server", "--host", "0.0.0.0", "--port", "7997"]

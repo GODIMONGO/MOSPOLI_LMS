@@ -1,4 +1,3 @@
-from numbers import Integral
 from typing import Any
 
 from semantic_router.config import SemanticRouterConfig
@@ -53,9 +52,11 @@ class RerankerClient:
             index = item.get("index")
             if not isinstance(index, int) or index < 0 or index >= len(candidates):
                 continue
-            score = item.get("relevance_score", item.get("score", candidates[index].score))
+            raw_score = item.get("relevance_score", item.get("score", candidates[index].score))
+            if not isinstance(raw_score, int | float | str):
+                raw_score = candidates[index].score
             candidate = candidates[index]
-            reranked.append(_merge_scores(candidate, float(score)))
+            reranked.append(_merge_scores(candidate, float(raw_score)))
             used_indexes.add(index)
 
         for index, candidate in enumerate(candidates):
@@ -90,10 +91,12 @@ def _rerank_with_local_jina_v3(query: str, candidates: list[SearchResult]) -> li
         if not isinstance(item, dict):
             continue
         index = item.get("index")
-        if not isinstance(index, Integral) or index < 0 or index >= len(candidates):
+        if not isinstance(index, int) or index < 0 or index >= len(candidates):
             continue
         candidate = candidates[int(index)]
         score = item.get("relevance_score", candidate.score)
+        if not isinstance(score, int | float | str):
+            score = candidate.score
         reranked.append(_merge_scores(candidate, float(score)))
     return reranked
 
