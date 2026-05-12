@@ -11,6 +11,5 @@ export function normalizeText(value: string): string {
 export function tokenize(value: string): string[] {
   return normalizeText(value)
     .split(' ')
-    .map((token) => token.trim())
     .filter((token) => token.length >= 2)
 }

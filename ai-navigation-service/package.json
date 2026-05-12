@@ -6,7 +6,6 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "start": "node dist/server.js",
-    "dev": "node --loader ts-node/esm src/server.ts",
     "test:api": "node scripts/test-api.mjs"
   },
   "dependencies": {},

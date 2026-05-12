@@ -70,8 +70,13 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-function createMockEmbedding(_input: string): number[] {
-  return Array.from({ length: MOCK_DIMENSIONS }, () => 0)
+function createMockEmbedding(input: string): number[] {
+  const vector = new Array<number>(MOCK_DIMENSIONS).fill(0)
+  for (let i = 0; i < input.length; i++) {
+    vector[i % MOCK_DIMENSIONS] += input.charCodeAt(i)
+  }
+  const norm = Math.sqrt(vector.reduce((sum, v) => sum + v * v, 0))
+  return norm === 0 ? vector : vector.map((v) => v / norm)
 }
 
 export function normalizeVector(vector: number[]): number[] {
